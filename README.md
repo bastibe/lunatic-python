@@ -14,22 +14,5 @@ Installing
 To install, you will need to have the Python and Lua development libraries on your system. If you
 do, use the recommended methods (```pip```, ```easy-install```, etc) to install lunatic-python.
 
-On some versions of Ubuntu, installation might fail with error messages. If it does, make sure
-```lualib5.1-0-dev``` and ```python-dev``` are installed, and change the two lines from:
-
-    extra_compile_args=["-rdynamic"],
-
-to:
-
-
-    extra_compile_args=["-rdynamic", "-I/usr/include/lua5.1"],
-
-If it complains about a missing ```lua``` or ``lualib```, change the line:
-
-    LUALIBS = ["lua"]
-
-to:
-
-    LUALIBS = ["lua5.1"]
-
-and it should compile cleanly.
+This version has been modified to compile under Ubuntu. I haven't tested it under other
+distributions, your mileage may vary.
