@@ -71,7 +71,7 @@ int py_convert(lua_State *L, PyObject *o, int withnone)
 	} else if (PyString_Check(o)) {
 		char *s;
 		Py_ssize_t len;
-		int res = PyString_AsStringAndSize(o, &s, &len);
+		PyString_AsStringAndSize(o, &s, &len);
 		lua_pushlstring(L, s, len);
 		ret = 1;
 	} else if (PyInt_Check(o) || PyFloat_Check(o)) {
