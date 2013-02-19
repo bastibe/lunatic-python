@@ -11,7 +11,7 @@ if os.path.isfile("MANIFEST"):
     os.unlink("MANIFEST")
 
 # You may have to change these
-LUAVERSION = "5.1"
+LUAVERSION = "5.2"
 PYLIBS = ["python" + get_python_version(), "pthread", "util"]
 PYLIBDIR = [get_python_lib(standard_lib=True) + "/config"]
 LUALIBS = ["lua" + LUAVERSION]
