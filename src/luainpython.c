@@ -22,7 +22,11 @@
 */
 #include <Python.h>
 
+/* need this to build with Lua 5.2: enables lua_strlen() macro */
+#define LUA_COMPAT_ALL
+
 #include <lua.h>
+#include <luaconf.h>
 #include <lauxlib.h>
 #include <lualib.h>
 
@@ -446,8 +450,7 @@ PyObject *Lua_eval(PyObject *self, PyObject *args)
 PyObject *Lua_globals(PyObject *self, PyObject *args)
 {
     PyObject *ret = NULL;
-    lua_pushliteral(LuaState, "_G");
-    lua_rawget(LuaState, LUA_GLOBALSINDEX);
+    lua_getglobal(LuaState, "_G");
     if (lua_isnil(LuaState, -1)) {
         PyErr_SetString(PyExc_RuntimeError,
                 "lost globals reference");
@@ -464,8 +467,7 @@ PyObject *Lua_globals(PyObject *self, PyObject *args)
 
 static PyObject *Lua_require(PyObject *self, PyObject *args)
 {
-    lua_pushliteral(LuaState, "require");
-    lua_rawget(LuaState, LUA_GLOBALSINDEX);
+    lua_getglobal(LuaState, "require");
     if (lua_isnil(LuaState, -1)) {
         lua_pop(LuaState, 1);
         PyErr_SetString(PyExc_RuntimeError, "require is not defined");

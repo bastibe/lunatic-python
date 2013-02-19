@@ -22,6 +22,9 @@
 */
 #include <Python.h>
 
+/* need this to build with Lua 5.2: defines luaL_register() macro */
+#define LUA_COMPAT_MODULE
+
 #include <lua.h>
 #include <lauxlib.h>
 
@@ -340,7 +343,7 @@ static int py_object_tostring(lua_State *L)
 	return 1;
 }
 
-static const luaL_reg py_object_lib[] = {
+static const luaL_Reg py_object_lib[] = {
 	{"__call",	py_object_call},
 	{"__index",	py_object_index},
 	{"__newindex",	py_object_newindex},
@@ -542,7 +545,7 @@ static int py_import(lua_State *L)
 	return ret;
 }
 
-static const luaL_reg py_lib[] = {
+static const luaL_Reg py_lib[] = {
 	{"execute",	py_execute},
 	{"eval",	py_eval},
 	{"asindx",	py_asindx},
@@ -560,11 +563,11 @@ LUA_API int luaopen_python(lua_State *L)
 	int rc;
 
 	/* Register module */
-	luaL_openlib(L, "python", py_lib, 0);
+	luaL_register(L, "python", py_lib);
 
 	/* Register python object metatable */
 	luaL_newmetatable(L, POBJECT);
-	luaL_openlib(L, NULL, py_object_lib, 0);
+	luaL_register(L, NULL, py_object_lib);
 	lua_pop(L, 1);
 
 	/* Initialize Lua state in Python territory */
