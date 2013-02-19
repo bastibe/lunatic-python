@@ -17,14 +17,16 @@ LUALIBS = ["lua5.1"]
 LUALIBDIR = []
 
 
-def pkgconfig(*packages, **kwargs):
+def pkgconfig(package):
+    # map pkg-config output to kwargs for distutils.core.Extension
     flag_map = {'-I': 'include_dirs', '-L': 'library_dirs', '-l': 'libraries'}
 
     (pcstatus, pcoutput) = commands.getstatusoutput(
-        "pkg-config --libs --cflags %s" % ' '.join(packages))
+        "pkg-config --libs --cflags %s" % package)
     if pcstatus != 0:
         sys.exit("pkg-config failed: " + pcoutput)
 
+    kwargs = {}
     for token in pcoutput.split():
         if token[:2] in flag_map:
             kwargs.setdefault(flag_map.get(token[:2]), []).append(token[2:])
