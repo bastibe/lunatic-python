@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from distutils.core import setup, Extension
 from distutils.sysconfig import get_python_lib, get_python_version
+import sys
 import commands
 import os
 
@@ -16,7 +17,12 @@ LUALIBDIR = []
 def pkgconfig(*packages, **kwargs):
     flag_map = {'-I': 'include_dirs', '-L': 'library_dirs', '-l': 'libraries'}
 
-    for token in commands.getoutput("pkg-config --libs --cflags %s" % ' '.join(packages)).split():
+    (pcstatus, pcoutput) = commands.getstatusoutput(
+        "pkg-config --libs --cflags %s" % ' '.join(packages))
+    if pcstatus != 0:
+        sys.exit("pkg-config failed: " + pcoutput)
+
+    for token in pcoutput.split():
         if flag_map.has_key(token[:2]):
             kwargs.setdefault(flag_map.get(token[:2]), []).append(token[2:])
         else: # throw others to extra_link_args
