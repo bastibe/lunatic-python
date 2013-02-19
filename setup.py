@@ -17,14 +17,19 @@ LUALIBS = ["lua5.1"]
 LUALIBDIR = []
 
 
-def pkgconfig(package):
+def pkgconfig(*packages):
     # map pkg-config output to kwargs for distutils.core.Extension
     flag_map = {'-I': 'include_dirs', '-L': 'library_dirs', '-l': 'libraries'}
 
-    (pcstatus, pcoutput) = commands.getstatusoutput(
-        "pkg-config --libs --cflags %s" % package)
-    if pcstatus != 0:
-        sys.exit("pkg-config failed: " + pcoutput)
+    for package in packages:
+        (pcstatus, pcoutput) = commands.getstatusoutput(
+            "pkg-config --libs --cflags %s" % package)
+        if pcstatus == 0:
+            break
+    else:
+        sys.exit("pkg-config failed for %s; "
+                 "most recent output was:\n%s" %
+                 (", ".join(packages), pcoutput))
 
     kwargs = {}
     for token in pcoutput.split():
@@ -54,11 +59,11 @@ inside Python, and so on.
       ext_modules=[
         Extension("lua-python",
                   ["src/pythoninlua.c", "src/luainpython.c"],
-                  **pkgconfig('lua')
+                  **pkgconfig('lua', 'lua5.1')
                   ),
         Extension("lua",
                   ["src/pythoninlua.c", "src/luainpython.c"],
-                  **pkgconfig('lua')
+                  **pkgconfig('lua', 'lua5.1')
                   )
         ],
       )
