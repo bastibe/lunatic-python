@@ -43,6 +43,8 @@ def pkgconfig(*packages):
 
     return kwargs
 
+lua_pkgconfig = pkgconfig('lua', 'lua5.1')
+
 setup(name="lunatic-python",
       version="1.0",
       description="Two-way bridge between Python and Lua",
@@ -59,11 +61,9 @@ inside Python, and so on.
       ext_modules=[
         Extension("lua-python",
                   ["src/pythoninlua.c", "src/luainpython.c"],
-                  **pkgconfig('lua', 'lua5.1')
-                  ),
+                  **lua_pkgconfig),
         Extension("lua",
                   ["src/pythoninlua.c", "src/luainpython.c"],
-                  **pkgconfig('lua', 'lua5.1')
-                  )
+                  **lua_pkgconfig),
         ],
       )
