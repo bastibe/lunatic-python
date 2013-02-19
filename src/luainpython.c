@@ -22,7 +22,11 @@
 */
 #include <Python.h>
 
+/* need this to build with Lua 5.2: enables lua_strlen() macro */
+#define LUA_COMPAT_ALL
+
 #include <lua.h>
+#include <luaconf.h>
 #include <lauxlib.h>
 #include <lualib.h>
 
