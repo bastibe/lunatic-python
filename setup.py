@@ -11,9 +11,10 @@ if os.path.isfile("MANIFEST"):
     os.unlink("MANIFEST")
 
 # You may have to change these
+LUAVERSION = "5.1"
 PYLIBS = ["python" + get_python_version(), "pthread", "util"]
 PYLIBDIR = [get_python_lib(standard_lib=True) + "/config"]
-LUALIBS = ["lua5.1"]
+LUALIBS = ["lua" + LUAVERSION]
 LUALIBDIR = []
 
 
@@ -43,7 +44,7 @@ def pkgconfig(*packages):
 
     return kwargs
 
-lua_pkgconfig = pkgconfig('lua', 'lua5.1')
+lua_pkgconfig = pkgconfig('lua', 'lua' + LUAVERSION)
 
 setup(name="lunatic-python",
       version="1.0",
