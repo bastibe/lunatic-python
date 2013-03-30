@@ -200,6 +200,16 @@ static PyObject *LuaObject_getattr(PyObject *obj, PyObject *attr)
         PyErr_SetString(PyExc_RuntimeError, "lost reference");
         return NULL;
     }
+    
+    if (!lua_isstring(LuaState, -1)
+        && !lua_istable(LuaState, -1)
+        && !lua_isuserdata(LuaState, -1))
+    {
+        lua_pop(LuaState, 1);
+        PyErr_SetString(PyExc_RuntimeError, "not an indexable value");
+        return NULL;
+    }
+
     PyObject *ret = NULL;
     int rc = py_convert(LuaState, attr, 0);
     if (rc) {
