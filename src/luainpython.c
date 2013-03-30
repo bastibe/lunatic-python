@@ -229,7 +229,13 @@ static int LuaObject_setattr(PyObject *obj, PyObject *attr, PyObject *value)
     }
     rc = py_convert(LuaState, attr, 0);
     if (rc) {
-        rc = py_convert(LuaState, value, 0);
+        if (NULL == value) {
+            lua_pushnil(LuaState);
+            rc = 1;
+        } else {
+            rc = py_convert(LuaState, value, 0);
+        }
+
         if (rc) {
             lua_settable(LuaState, -3);
             ret = 0;
