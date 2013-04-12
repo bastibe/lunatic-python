@@ -29,7 +29,7 @@ typedef struct {
 	int refiter;
 } LuaObject;
 
-PyAPI_DATA(PyTypeObject) LuaObject_Type;
+extern PyTypeObject LuaObject_Type;
 
 #define LuaObject_Check(op) PyObject_TypeCheck(op, &LuaObject_Type)
 
