@@ -500,8 +500,7 @@ static PyMethodDef lua_methods[] = {
     {NULL,         NULL}
 };
 
-PyMODINIT_FUNC
-initlua(void)
+PyMODINIT_FUNC initlua(void)
 {
     PyObject *m;
 

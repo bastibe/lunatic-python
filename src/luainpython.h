@@ -24,9 +24,9 @@
 #define LUAINPYTHON_H
 
 typedef struct {
-	PyObject_HEAD
-	int ref;
-	int refiter;
+    PyObject_HEAD
+    int ref;
+    int refiter;
 } LuaObject;
 
 extern PyTypeObject LuaObject_Type;
