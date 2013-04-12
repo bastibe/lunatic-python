@@ -37,6 +37,6 @@ PyObject *LuaConvert(lua_State *L, int n);
 
 extern lua_State *LuaState;
 
-DL_EXPORT(void) initlua(void);
+PyMODINIT_FUNC initlua(void);
 
 #endif
