@@ -105,27 +105,23 @@ static int py_object_call(lua_State *L)
     int i;
 
     if (!obj) {
-        luaL_argerror(L, 1, "not a python object");
-        return 0;
+        return luaL_argerror(L, 1, "not a python object");
     }
     if (!PyCallable_Check(obj->o)) {
-        luaL_error(L, "object is not callable");
-        return 0;
+        return luaL_error(L, "object is not callable");
     }
 
     args = PyTuple_New(nargs);
     if (!args) {
-                PyErr_Print();
-        luaL_error(L, "failed to create arguments tuple");
-        return 0;
+        PyErr_Print();
+        return luaL_error(L, "failed to create arguments tuple");
     }
 
     for (i = 0; i != nargs; i++) {
         PyObject *arg = LuaConvert(L, i+2);
         if (!arg) {
-            luaL_error(L, "failed to convert argument #%d", i+1);
             Py_DECREF(args);
-            return 0;
+            return luaL_error(L, "failed to convert argument #%d", i+1);
         }
         PyTuple_SetItem(args, i, arg);
     }
@@ -149,16 +145,14 @@ static int _p_object_newindex_set(lua_State *L, py_object *obj,
     PyObject *key = LuaConvert(L, keyn);
 
     if (!key) {
-        luaL_argerror(L, 1, "failed to convert key");
-        return 0;
+        return luaL_argerror(L, 1, "failed to convert key");
     }
 
     if (!lua_isnil(L, valuen)) {
         value = LuaConvert(L, valuen);
         if (!value) {
             Py_DECREF(key);
-            luaL_argerror(L, 1, "failed to convert value");
-            return 0;
+            return luaL_argerror(L, 1, "failed to convert value");
         }
 
         if (PyObject_SetItem(obj->o, key, value) == -1) {
@@ -175,7 +169,6 @@ static int _p_object_newindex_set(lua_State *L, py_object *obj,
     }
 
     Py_DECREF(key);
-
     return 0;
 }
 
@@ -184,8 +177,7 @@ static int py_object_newindex_set(lua_State *L)
     py_object *obj = (py_object*) luaL_checkudata(L, lua_upvalueindex(1),
                             POBJECT);
     if (lua_gettop(L) != 2) {
-        luaL_error(L, "invalid arguments");
-        return 0;
+        return luaL_error(L, "invalid arguments");
     }
     return _p_object_newindex_set(L, obj, 1, 2);
 }
@@ -197,8 +189,7 @@ static int py_object_newindex(lua_State *L)
     PyObject *value;
 
     if (!obj) {
-        luaL_argerror(L, 1, "not a python object");
-        return 0;
+        return luaL_argerror(L, 1, "not a python object");
     }
 
     if (obj->asindx)
@@ -206,25 +197,21 @@ static int py_object_newindex(lua_State *L)
 
     attr = luaL_checkstring(L, 2);
     if (!attr) {
-        luaL_argerror(L, 2, "string needed");
-        return 0;
+        return luaL_argerror(L, 2, "string needed");
     }
 
     value = LuaConvert(L, 3);
     if (!value) {
-        luaL_argerror(L, 1, "failed to convert value");
-        return 0;
+        return luaL_argerror(L, 1, "failed to convert value");
     }
 
     if (PyObject_SetAttrString(obj->o, (char*)attr, value) == -1) {
         Py_DECREF(value);
-                PyErr_Print();
-        luaL_error(L, "failed to set value");
-        return 0;
+        PyErr_Print();
+        return luaL_error(L, "failed to set value");
     }
 
     Py_DECREF(value);
-
     return 0;
 }
 
@@ -235,8 +222,7 @@ static int _p_object_index_get(lua_State *L, py_object *obj, int keyn)
     int ret = 0;
 
     if (!key) {
-        luaL_argerror(L, 1, "failed to convert key");
-        return 0;
+        return luaL_argerror(L, 1, "failed to convert key");
     }
 
     item = PyObject_GetItem(obj->o, key);
@@ -263,8 +249,7 @@ static int py_object_index_get(lua_State *L)
                             POBJECT);
     int top = lua_gettop(L);
     if (top < 1 || top > 2) {
-        luaL_error(L, "invalid arguments");
-        return 0;
+        return luaL_error(L, "invalid arguments");
     }
     return _p_object_index_get(L, obj, 1);
 }
@@ -277,8 +262,7 @@ static int py_object_index(lua_State *L)
     int ret = 0;
 
     if (!obj) {
-        luaL_argerror(L, 1, "not a python object");
-        return 0;
+        return luaL_argerror(L, 1, "not a python object");
     }
 
     if (obj->asindx)
@@ -286,8 +270,7 @@ static int py_object_index(lua_State *L)
 
     attr = luaL_checkstring(L, 2);
     if (!attr) {
-        luaL_argerror(L, 2, "string needed");
-        return 0;
+        return luaL_argerror(L, 2, "string needed");
     }
 
     if (attr[0] == '_' && strcmp(attr, "__get") == 0) {
@@ -368,8 +351,7 @@ static int py_run(lua_State *L, int eval)
         len = strlen(s)+1;
         buffer = (char *) malloc(len+1);
         if (!buffer) {
-            luaL_error(L, "Failed allocating buffer for execution");
-            return 0;
+            return luaL_error(L, "Failed allocating buffer for execution");
         }
         strcpy(buffer, s);
         buffer[len-1] = '\n';
@@ -377,31 +359,30 @@ static int py_run(lua_State *L, int eval)
         s = buffer;
     }
 
-        m = PyImport_AddModule("__main__");
-        if (!m) {
+    m = PyImport_AddModule("__main__");
+    if (!m) {
         free(buffer);
-        luaL_error(L, "Can't get __main__ module");
-        return 0;
+        return luaL_error(L, "Can't get __main__ module");
     }
-        d = PyModule_GetDict(m);
+    d = PyModule_GetDict(m);
 
-        o = PyRun_StringFlags(s, eval ? Py_eval_input : Py_single_input,
-                  d, d, NULL);
+    o = PyRun_StringFlags(s, eval ? Py_eval_input : Py_single_input,
+                          d, d, NULL);
 
     free(buffer);
 
-        if (!o) {
-                PyErr_Print();
+    if (!o) {
+        PyErr_Print();
         return 0;
-        }
+    }
 
     if (py_convert(L, o, 0))
         ret = 1;
 
     Py_DECREF(o);
 
-        if (Py_FlushLine())
-                PyErr_Clear();
+    if (Py_FlushLine())
+        PyErr_Clear();
 
     return ret;
 }
@@ -419,23 +400,19 @@ static int py_eval(lua_State *L)
 static int py_asindx(lua_State *L)
 {
     py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
-    if (obj)
-        return py_convert_custom(L, obj->o, 1);
-    else
-        luaL_argerror(L, 1, "not a python object");
+    if (!obj)
+        return luaL_argerror(L, 1, "not a python object");
 
-    return 0;
+    return py_convert_custom(L, obj->o, 1);
 }
 
 static int py_asattr(lua_State *L)
 {
     py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
-    if (obj)
-        return py_convert_custom(L, obj->o, 0);
-    else
-        luaL_argerror(L, 1, "not a python object");
+    if (!obj)
+        return luaL_argerror(L, 1, "not a python object");
 
-    return 0;
+    return py_convert_custom(L, obj->o, 0);
 }
 
 static int py_asfunc_call(lua_State *L)
@@ -463,24 +440,21 @@ static int py_globals(lua_State *L)
     PyObject *globals;
 
     if (lua_gettop(L) != 0) {
-        luaL_error(L, "invalid arguments");
-        return 0;
+        return luaL_error(L, "invalid arguments");
     }
 
     globals = PyEval_GetGlobals();
     if (!globals) {
         PyObject *module = PyImport_AddModule("__main__");
         if (!module) {
-            luaL_error(L, "Can't get __main__ module");
-            return 0;
+            return luaL_error(L, "Can't get __main__ module");
         }
         globals = PyModule_GetDict(module);
     }
 
     if (!globals) {
         PyErr_Print();
-        luaL_error(L, "can't get globals");
-        return 0;
+        return luaL_error(L, "can't get globals");
     }
 
     return py_convert_custom(L, globals, 1);
@@ -491,8 +465,7 @@ static int py_locals(lua_State *L)
     PyObject *locals;
 
     if (lua_gettop(L) != 0) {
-        luaL_error(L, "invalid arguments");
-        return 0;
+        return luaL_error(L, "invalid arguments");
     }
 
     locals = PyEval_GetLocals();
@@ -507,15 +480,13 @@ static int py_builtins(lua_State *L)
     PyObject *builtins;
 
     if (lua_gettop(L) != 0) {
-        luaL_error(L, "invalid arguments");
-        return 0;
+        return luaL_error(L, "invalid arguments");
     }
 
     builtins = PyEval_GetBuiltins();
     if (!builtins) {
         PyErr_Print();
-        luaL_error(L, "failed to get builtins");
-        return 0;
+        return luaL_error(L, "failed to get builtins");
     }
 
     return py_convert_custom(L, builtins, 1);
@@ -528,16 +499,14 @@ static int py_import(lua_State *L)
     int ret;
 
     if (!name) {
-        luaL_argerror(L, 1, "module name expected");
-        return 0;
+        return luaL_argerror(L, 1, "module name expected");
     }
 
     module = PyImport_ImportModule((char*)name);
 
     if (!module) {
         PyErr_Print();
-        luaL_error(L, "failed importing '%s'", name);
-        return 0;
+        return luaL_error(L, "failed importing '%s'", name);
     }
 
     ret = py_convert_custom(L, module, 0);
