@@ -69,8 +69,10 @@ int py_convert(lua_State *L, PyObject *o, int withnone)
         }
     } else if (o == Py_True) {
         lua_pushboolean(L, 1);
+        ret = 1;
     } else if (o == Py_False) {
         lua_pushboolean(L, 0);
+        ret = 1;
     } else if (PyString_Check(o)) {
         char *s;
         Py_ssize_t len;
