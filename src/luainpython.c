@@ -59,8 +59,7 @@ PyObject *LuaConvert(lua_State *L, int n)
         case LUA_TNUMBER: {
             lua_Number num = lua_tonumber(L, n);
             if (num != (long)num) {
-                ret = PyFloat_FromDouble(
-                    (lua_Number)lua_tonumber(L, n));
+                ret = PyFloat_FromDouble(num);
             } else {
                 ret = PyInt_FromLong((long)num);
             }
