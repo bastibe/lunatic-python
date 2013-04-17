@@ -79,8 +79,11 @@ int py_convert(lua_State *L, PyObject *o, int withnone)
         PyString_AsStringAndSize(o, &s, &len);
         lua_pushlstring(L, s, len);
         ret = 1;
-    } else if (PyInt_Check(o) || PyFloat_Check(o)) {
+    } else if (PyInt_Check(o)) {
         lua_pushnumber(L, (lua_Number)PyInt_AsLong(o));
+        ret = 1;
+    } else if (PyFloat_Check(o)) {
+        lua_pushnumber(L, (lua_Number)PyFloat_AsDouble(o));
         ret = 1;
     } else if (LuaObject_Check(o)) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, ((LuaObject*)o)->ref);
