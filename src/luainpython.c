@@ -77,8 +77,7 @@ PyObject *LuaConvert(lua_State *L, int n)
             break;
 
         case LUA_TUSERDATA: {
-            py_object *obj = (py_object*)
-                     luaL_checkudata(L, n, POBJECT);
+            py_object *obj = luaPy_to_pobject(L, n);
 
             if (obj) {
                 Py_INCREF(obj->o);
