@@ -73,14 +73,20 @@ int py_convert(lua_State *L, PyObject *o, int withnone)
     } else if (o == Py_False) {
         lua_pushboolean(L, 0);
         ret = 1;
-    } else if (PyString_Check(o)) {
-        char *s;
+#if PY_MAJOR_VERSION >= 3
+    } else if (PyUnicode_Check(o)) {
         Py_ssize_t len;
+        char *s = PyUnicode_AsUTF8AndSize(o, &len);
+#else
+    } else if (PyString_Check(o)) {
+        Py_ssize_t len;
+        char *s;
         PyString_AsStringAndSize(o, &s, &len);
+#endif
         lua_pushlstring(L, s, len);
         ret = 1;
-    } else if (PyInt_Check(o)) {
-        lua_pushnumber(L, (lua_Number)PyInt_AsLong(o));
+    } else if (PyLong_Check(o)) {
+        lua_pushnumber(L, (lua_Number)PyLong_AsLong(o));
         ret = 1;
     } else if (PyFloat_Check(o)) {
         lua_pushnumber(L, (lua_Number)PyFloat_AsDouble(o));
@@ -321,10 +327,8 @@ static int py_object_tostring(lua_State *L)
             lua_pushstring(L, buf);
             PyErr_Clear();
         } else {
-            char *s;
-            Py_ssize_t len;
-            PyString_AsStringAndSize(repr, &s, &len);
-            lua_pushlstring(L, s, len);
+            py_convert(L, repr, 0);
+            assert(lua_type(L, -1) == LUA_TSTRING);
             Py_DECREF(repr);
         }
     }
@@ -385,8 +389,10 @@ static int py_run(lua_State *L, int eval)
         ret = 1;
 
     Py_DECREF(o);
-
+    
+#if PY_MAJOR_VERSION < 3
     if (Py_FlushLine())
+#endif
         PyErr_Clear();
 
     return ret;
@@ -550,11 +556,15 @@ LUA_API int luaopen_python(lua_State *L)
     /* Initialize Python interpreter */
     if (!Py_IsInitialized()) {
         PyObject *luam, *mainm, *maind;
+#if PY_MAJOR_VERSION >= 3
+        wchar_t *argv[] = {L"<lua>", 0};
+#else
         char *argv[] = {"<lua>", 0};
-        Py_SetProgramName("<lua>");
+#endif
+        Py_SetProgramName(argv[0]);
+        PyImport_AppendInittab("lua", PyInit_lua);
         Py_Initialize();
         PySys_SetArgv(1, argv);
-        initlua();
         /* Import 'lua' automatically. */
         luam = PyImport_ImportModule("lua");
         if (!luam) {
