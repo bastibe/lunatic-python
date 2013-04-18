@@ -52,7 +52,7 @@ PyObject *LuaConvert(lua_State *L, int n)
         case LUA_TSTRING: {
             const char *s = lua_tostring(L, n);
             int len = lua_strlen(L, n);
-            ret = PyString_FromStringAndSize(s, len);
+            ret = PyUnicode_FromStringAndSize(s, len);
             break;
         }
 
@@ -61,7 +61,7 @@ PyObject *LuaConvert(lua_State *L, int n)
             if (num != (long)num) {
                 ret = PyFloat_FromDouble(num);
             } else {
-                ret = PyInt_FromLong((long)num);
+                ret = PyLong_FromLong((long)num);
             }
             break;
         }
@@ -77,8 +77,7 @@ PyObject *LuaConvert(lua_State *L, int n)
             break;
 
         case LUA_TUSERDATA: {
-            py_object *obj = (py_object*)
-                     luaL_checkudata(L, n, POBJECT);
+            py_object *obj = luaPy_to_pobject(L, n);
 
             if (obj) {
                 Py_INCREF(obj->o);
@@ -188,7 +187,7 @@ static void LuaObject_dealloc(LuaObject *self)
     luaL_unref(LuaState, LUA_REGISTRYINDEX, self->ref);
     if (self->refiter)
         luaL_unref(LuaState, LUA_REGISTRYINDEX, self->refiter);
-    self->ob_type->tp_free((PyObject *)self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 static PyObject *LuaObject_getattr(PyObject *obj, PyObject *attr)
@@ -267,33 +266,33 @@ static PyObject *LuaObject_str(PyObject *obj)
     if (luaL_callmeta(LuaState, -1, "__tostring")) {
         s = lua_tostring(LuaState, -1);
         lua_pop(LuaState, 1);
-        if (s) ret = PyString_FromString(s);
+        if (s) ret = PyUnicode_FromString(s);
     }
     if (!ret) {
         int type = lua_type(LuaState, -1);
         switch (type) {
             case LUA_TTABLE:
             case LUA_TFUNCTION:
-                ret = PyString_FromFormat("<Lua %s at %p>",
+                ret = PyUnicode_FromFormat("<Lua %s at %p>",
                     lua_typename(LuaState, type),
                     lua_topointer(LuaState, -1));
                 break;
             
             case LUA_TUSERDATA:
             case LUA_TLIGHTUSERDATA:
-                ret = PyString_FromFormat("<Lua %s at %p>",
+                ret = PyUnicode_FromFormat("<Lua %s at %p>",
                     lua_typename(LuaState, type),
                     lua_touserdata(LuaState, -1));
                 break;
 
             case LUA_TTHREAD:
-                ret = PyString_FromFormat("<Lua %s at %p>",
+                ret = PyUnicode_FromFormat("<Lua %s at %p>",
                     lua_typename(LuaState, type),
                     (void*)lua_tothread(LuaState, -1));
                 break;
 
             default:
-                ret = PyString_FromFormat("<Lua %s>",
+                ret = PyUnicode_FromFormat("<Lua %s>",
                     lua_typename(LuaState, type));
                 break;
 
@@ -369,8 +368,7 @@ static PyMappingMethods LuaObject_as_mapping = {
 };
 
 PyTypeObject LuaObject_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,                        /*ob_size*/
+    PyVarObject_HEAD_INIT(NULL, 0)
     "lua.custom",             /*tp_name*/
     sizeof(LuaObject),        /*tp_basicsize*/
     0,                        /*tp_itemsize*/
@@ -408,7 +406,7 @@ PyTypeObject LuaObject_Type = {
     0,                        /*tp_init*/
     PyType_GenericAlloc,      /*tp_alloc*/
     PyType_GenericNew,        /*tp_new*/
-    _PyObject_Del,            /*tp_free*/
+    PyObject_Del,            /*tp_free*/
     0,                        /*tp_is_gc*/
 };
 
@@ -499,18 +497,30 @@ static PyMethodDef lua_methods[] = {
     {NULL,         NULL}
 };
 
-PyMODINIT_FUNC initlua(void)
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef lua_module = {
+    PyModuleDef_HEAD_INIT,
+    "lua",
+    "Lunatic-Python Python-Lua bridge",
+    -1,
+    lua_methods
+};
+#endif
+
+PyMODINIT_FUNC PyInit_lua(void)
 {
     PyObject *m;
 
-    if (PyType_Ready(&LuaObject_Type) < 0)
-        return;
-
+#if PY_MAJOR_VERSION >= 3
+    if (PyType_Ready(&LuaObject_Type) < 0) return NULL;
+    m = PyModule_Create(&lua_module);
+    if (m == NULL) return NULL;
+#else
+    if (PyType_Ready(&LuaObject_Type) < 0) return;
     m = Py_InitModule3("lua", lua_methods,
-                      "Lunatic-Python Python-Lua bridge");
-
-    if (m == NULL)
-        return;
+                       "Lunatic-Python Python-Lua bridge");
+    if (m == NULL) return;
+#endif
 
     Py_INCREF(&LuaObject_Type);
 
@@ -520,4 +530,8 @@ PyMODINIT_FUNC initlua(void)
         luaopen_python(LuaState);
         lua_settop(LuaState, 0);
     }
+
+#if PY_MAJOR_VERSION >= 3
+    return m;
+#endif
 }
