@@ -26,17 +26,16 @@ PYLIBDIR = [get_python_lib(standard_lib=True) + "/config"]
 LUALIBS = ["lua" + LUAVERSION]
 LUALIBDIR = []
 
+if not PYTHONVERSION:
+    PYTHONVERSION = get_python_version()
 
 def pkgconfig(*packages):
     # map pkg-config output to kwargs for distutils.core.Extension
     flag_map = {'-I': 'include_dirs', '-L': 'library_dirs', '-l': 'libraries'}
 
     for package in packages:
-        if package.startswith('python') and PYTHONVERSION:
-            cmd = "%s --libs --cflags" % package
-        else:
-            cmd = "pkg-config --libs --cflags %s" % package
-        (pcstatus, pcoutput) = commands.getstatusoutput(cmd)
+        (pcstatus, pcoutput) = commands.getstatusoutput(
+            "pkg-config --libs --cflags %s" % package)
         if pcstatus == 0:
             break
     else:
@@ -60,7 +59,7 @@ def pkgconfig(*packages):
 
     return kwargs
 
-lua_pkgconfig = pkgconfig('lua', 'lua' + LUAVERSION,'python' + PYTHONVERSION)
+lua_pkgconfig = pkgconfig('lua', 'lua' + LUAVERSION,'python-' + PYTHONVERSION)
 
 setup(name="lunatic-python",
       version="1.0",
