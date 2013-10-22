@@ -2,8 +2,16 @@
 
 import sys
 import os
-import commands
 
+if sys.version > '3':
+    PY3 = True
+else:
+    PY3 = False
+
+if PY3:
+    import subprocess as commands
+else:
+    import commands
 from distutils.core import setup, Extension
 from distutils.sysconfig import get_python_lib, get_python_version
 
@@ -12,6 +20,7 @@ if os.path.isfile("MANIFEST"):
 
 # You may have to change these
 LUAVERSION = "5.2"
+PYTHONVERSION = "" # eg.:"3.3" empty:system default
 PYLIBS = ["python" + get_python_version(), "pthread", "util"]
 PYLIBDIR = [get_python_lib(standard_lib=True) + "/config"]
 LUALIBS = ["lua" + LUAVERSION]
@@ -23,8 +32,11 @@ def pkgconfig(*packages):
     flag_map = {'-I': 'include_dirs', '-L': 'library_dirs', '-l': 'libraries'}
 
     for package in packages:
-        (pcstatus, pcoutput) = commands.getstatusoutput(
-            "pkg-config --libs --cflags %s" % package)
+        if package.startswith('python') and PYTHONVERSION:
+            cmd = "%s --libs --cflags" % package
+        else:
+            cmd = "pkg-config --libs --cflags %s" % package
+        (pcstatus, pcoutput) = commands.getstatusoutput(cmd)
         if pcstatus == 0:
             break
     else:
@@ -39,12 +51,16 @@ def pkgconfig(*packages):
         else:                           # throw others to extra_link_args
             kwargs.setdefault('extra_link_args', []).append(token)
 
-    for k, v in kwargs.iteritems():     # remove duplicated
+    if PY3:
+        items = kwargs.items()
+    else:
+        items = kwargs.iteritems()
+    for k, v in items:     # remove duplicated
         kwargs[k] = list(set(v))
 
     return kwargs
 
-lua_pkgconfig = pkgconfig('lua', 'lua' + LUAVERSION)
+lua_pkgconfig = pkgconfig('lua', 'lua' + LUAVERSION,'python' + PYTHONVERSION)
 
 setup(name="lunatic-python",
       version="1.0",
