@@ -2,8 +2,16 @@
 
 import sys
 import os
-import commands
 
+if sys.version > '3':
+    PY3 = True
+else:
+    PY3 = False
+
+if PY3:
+    import subprocess as commands
+else:
+    import commands
 from distutils.core import setup, Extension
 from distutils.sysconfig import get_python_lib, get_python_version
 
@@ -12,11 +20,14 @@ if os.path.isfile("MANIFEST"):
 
 # You may have to change these
 LUAVERSION = "5.2"
+PYTHONVERSION = "" # eg.:"3.3" empty:system default
 PYLIBS = ["python" + get_python_version(), "pthread", "util"]
 PYLIBDIR = [get_python_lib(standard_lib=True) + "/config"]
 LUALIBS = ["lua" + LUAVERSION]
 LUALIBDIR = []
 
+if not PYTHONVERSION:
+    PYTHONVERSION = get_python_version()
 
 def pkgconfig(*packages):
     # map pkg-config output to kwargs for distutils.core.Extension
@@ -39,12 +50,16 @@ def pkgconfig(*packages):
         else:                           # throw others to extra_link_args
             kwargs.setdefault('extra_link_args', []).append(token)
 
-    for k, v in kwargs.iteritems():     # remove duplicated
+    if PY3:
+        items = kwargs.items()
+    else:
+        items = kwargs.iteritems()
+    for k, v in items:     # remove duplicated
         kwargs[k] = list(set(v))
 
     return kwargs
 
-lua_pkgconfig = pkgconfig('lua', 'lua' + LUAVERSION)
+lua_pkgconfig = pkgconfig('lua', 'lua' + LUAVERSION,'python-' + PYTHONVERSION)
 
 setup(name="lunatic-python",
       version="1.0",
