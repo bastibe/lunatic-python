@@ -20,14 +20,11 @@ if os.path.isfile("MANIFEST"):
 
 # You may have to change these
 LUAVERSION = "5.2"
-PYTHONVERSION = "" # eg.:"3.3" empty:system default
+PYTHONVERSION = get_python_version()
 PYLIBS = ["python" + get_python_version(), "pthread", "util"]
 PYLIBDIR = [get_python_lib(standard_lib=True) + "/config"]
 LUALIBS = ["lua" + LUAVERSION]
 LUALIBDIR = []
-
-if not PYTHONVERSION:
-    PYTHONVERSION = get_python_version()
 
 def pkgconfig(*packages):
     # map pkg-config output to kwargs for distutils.core.Extension
