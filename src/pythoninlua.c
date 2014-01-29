@@ -85,6 +85,11 @@ int py_convert(lua_State *L, PyObject *o, int withnone)
 #endif
         lua_pushlstring(L, s, len);
         ret = 1;
+#if PY_MAJOR_VERSION < 3
+    } else if (PyInt_Check(o)) {
+        lua_pushnumber(L, (lua_Number)PyInt_AsLong(o));
+        ret = 1;
+#endif
     } else if (PyLong_Check(o)) {
         lua_pushnumber(L, (lua_Number)PyLong_AsLong(o));
         ret = 1;
