@@ -209,19 +209,19 @@ static PyObject *LuaObject_getattr(PyObject *obj, PyObject *attr)
         return NULL;
     }
 	
-	{
-		PyObject *ret = NULL;
+    {
+        PyObject *ret = NULL;
 
-		if (rc) {
-			lua_gettable(LuaState, -2);
-			ret = LuaConvert(LuaState, -1);
-		} else {
-			PyErr_SetString(PyExc_ValueError, "can't convert attr/key");
-		}
-		lua_settop(LuaState, 0);
-	
-		return ret;
-	}
+        if (rc) {
+            lua_gettable(LuaState, -2);
+            ret = LuaConvert(LuaState, -1);
+        } else {
+            PyErr_SetString(PyExc_ValueError, "can't convert attr/key");
+        }
+        lua_settop(LuaState, 0);
+
+        return ret;
+    }
 }
 
 static int LuaObject_setattr(PyObject *obj, PyObject *attr, PyObject *value)
