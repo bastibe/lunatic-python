@@ -532,9 +532,9 @@ static int py_import(lua_State *L)
 
 py_object* luaPy_to_pobject(lua_State *L, int n)
 {
+	int is_pobject = lua_rawequal(L, -1, -2);
     if(!lua_getmetatable(L, n)) return NULL;
     luaL_getmetatable(L, POBJECT);
-    int is_pobject = lua_rawequal(L, -1, -2);
     lua_pop(L, 2);
 
     return is_pobject ? (py_object *) lua_touserdata(L, n) : NULL;
