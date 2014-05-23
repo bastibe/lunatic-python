@@ -192,7 +192,7 @@ static void LuaObject_dealloc(LuaObject *self)
 
 static PyObject *LuaObject_getattr(PyObject *obj, PyObject *attr)
 {
-	int rc = py_convert(LuaState, attr, 0);
+    int rc = py_convert(LuaState, attr, 0);
     lua_rawgeti(LuaState, LUA_REGISTRYINDEX, ((LuaObject*)obj)->ref);
     if (lua_isnil(LuaState, -1)) {
         lua_pop(LuaState, 1);
