@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.8)
+cmake_minimum_required(VERSION 2.8.12)
 
 set(CMAKE_BUILD_TYPE_INIT "Release")
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
@@ -6,7 +6,7 @@ set(LIBRARY_OUTPUT_PATH ${EXECUTABLE_OUTPUT_PATH})
 
 project(Lunatic)
 
-find_package(Lua51 REQUIRED)
+find_package(Lua 5.2 REQUIRED)
 find_package(PythonLibs REQUIRED)
 
 include_directories(${LUA_INCLUDE_DIR})
