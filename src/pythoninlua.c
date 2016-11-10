@@ -143,6 +143,7 @@ static int py_object_call(lua_State *L)
     }
 
     value = PyObject_CallObject(obj->o, args);
+    Py_DECREF(args);
     if (value) {
         ret = py_convert(L, value, 0);
         Py_DECREF(value);
