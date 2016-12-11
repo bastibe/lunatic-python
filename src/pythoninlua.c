@@ -209,7 +209,7 @@ static int py_object_newindex(lua_State *L)
         return luaL_argerror(L, 1, "not a python object");
     }
 
-    if (obj->asindx)
+    if (obj->asindx || lua_type(L, 2)!=LUA_TSTRING)
         return _p_object_newindex_set(L, obj, 2, 3);
 
     attr = luaL_checkstring(L, 2);
@@ -282,7 +282,7 @@ static int py_object_index(lua_State *L)
         return luaL_argerror(L, 1, "not a python object");
     }
 
-    if (obj->asindx)
+    if (obj->asindx || lua_type(L, 2)!=LUA_TSTRING)
         return _p_object_index_get(L, obj, 2);
 
     attr = luaL_checkstring(L, 2);
