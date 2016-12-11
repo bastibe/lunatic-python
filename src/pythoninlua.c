@@ -155,6 +155,46 @@ static int py_object_call(lua_State *L)
     return ret;
 }
 
+static int py_object_call2(lua_State *L, PyObject *obj)
+{
+    PyObject *args;
+    PyObject *value;
+    int nargs = lua_gettop(L);
+    int ret = 0;
+    int i;
+
+    if (!PyCallable_Check(obj)) {
+        return luaL_error(L, "object is not callable");
+    }
+
+    args = PyTuple_New(nargs);
+    if (!args) {
+        PyErr_Print();
+        return luaL_error(L, "failed to create arguments tuple");
+    }
+
+    for (i = 0; i != nargs; i++) {
+        PyObject *arg = LuaConvert(L, i+1);
+        if (!arg) {
+            Py_DECREF(args);
+            return luaL_error(L, "failed to convert argument #%d", i+1);
+        }
+        PyTuple_SetItem(args, i, arg);
+    }
+
+    value = PyObject_Call(obj, args, NULL);
+    Py_DECREF(args);
+    if (value) {
+        ret = py_convert(L, value, 0);
+        Py_DECREF(value);
+    } else {
+        PyErr_Print();
+        luaL_error(L, "error calling python function");
+    }
+
+    return ret;
+}
+
 static int _p_object_newindex_set(lua_State *L, py_object *obj,
                   int keyn, int valuen)
 {
