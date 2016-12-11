@@ -116,6 +116,7 @@ static int py_object_call(lua_State *L)
     py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
     PyObject *args;
     PyObject *value;
+    PyObject* pKywdArgs = NULL;
     int nargs = lua_gettop(L)-1;
     int ret = 0;
     int i;
@@ -127,23 +128,71 @@ static int py_object_call(lua_State *L)
         return luaL_error(L, "object is not callable");
     }
 
-    args = PyTuple_New(nargs);
-    if (!args) {
-        PyErr_Print();
-        return luaL_error(L, "failed to create arguments tuple");
-    }
-
-    for (i = 0; i != nargs; i++) {
-        PyObject *arg = LuaConvert(L, i+2);
-        if (!arg) {
-            Py_DECREF(args);
-            return luaL_error(L, "failed to convert argument #%d", i+1);
+    // passing a single table forces named keyword call style, e.g. plt.plot{x, y, c='red'}
+    if (nargs==1 && lua_istable(L, 2)) {
+        lua_pushnil(L);  /* first key */
+        while (lua_next(L, 2) != 0) {
+            if (lua_isnumber(L, -2)) {
+                nargs = max(nargs, lua_tointeger(L, -2));
+	           }
+            lua_pop(L, 1);
         }
-        PyTuple_SetItem(args, i, arg);
+        args = PyTuple_New(nargs);
+        if (!args) {
+            PyErr_Print();
+            return luaL_error(L, "failed to create arguments tuple");
+        }
+	       pKywdArgs = PyDict_New();    
+        if (!pKywdArgs) {
+            Py_DECREF(args);
+            PyErr_Print();
+            return luaL_error(L, "failed to create arguments dictionary");
+        }
+        lua_pushnil(L);  /* first key */
+        while (lua_next(L, 2) != 0) {
+            if (lua_isnumber(L, -2)) {
+	               PyObject *arg = LuaConvert(L, -1);
+                if (!arg) {
+                    Py_DECREF(args);
+                    Py_DECREF(pKywdArgs);
+                    return luaL_error(L, "failed to convert argument #%d", lua_tointeger(L, -2));
+                }
+	               PyTuple_SetItem(args, lua_tointeger(L, -2)-1, arg);
+	           }
+	           else if (lua_isstring(L, -2)) {
+	               PyObject *arg = LuaConvert(L, -1);
+                if (!arg) {
+                    Py_DECREF(args);
+                    Py_DECREF(pKywdArgs);
+		                  return luaL_error(L, "failed to convert argument '%s'", lua_tostring(L, -2));
+                }
+		              PyDict_SetItemString(pKywdArgs, lua_tostring(L, -2), arg);
+                Py_DECREF(arg);
+            }
+            lua_pop(L, 1);
+        }
+    }
+    // regular call style e.g. plt.plot(x, y)
+    else {
+        args = PyTuple_New(nargs);
+        if (!args) {
+            PyErr_Print();
+            return luaL_error(L, "failed to create arguments tuple");
+        }
+        for (i = 0; i != nargs; i++) {
+            PyObject *arg = LuaConvert(L, i+2);
+            if (!arg) {
+                Py_DECREF(args);
+                return luaL_error(L, "failed to convert argument #%d", i+1);
+            }
+            PyTuple_SetItem(args, i, arg);
+       }
     }
 
-    value = PyObject_CallObject(obj->o, args);
+    value = PyObject_Call(obj->o, args, pKywdArgs);
     Py_DECREF(args);
+    if (pKywdArgs) Py_DECREF(pKywdArgs);
+
     if (value) {
         ret = py_convert(L, value, 0);
         Py_DECREF(value);
