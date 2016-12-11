@@ -341,12 +341,112 @@ static int py_object_tostring(lua_State *L)
     return 1;
 }
 
+static int py_object_mul(lua_State *L)
+{
+    int r=0;
+    PyObject *value;
+    if (lua_isuserdata(L, 1))
+    { py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
+      lua_remove(L, 1);
+      value = PyObject_GetAttrString(obj->o, "__mul__");
+    }
+    else
+    { py_object *obj = (py_object*) luaL_checkudata(L, 2, POBJECT);
+      lua_remove(L, 2);
+      value = PyObject_GetAttrString(obj->o, "__rmul__");
+    }
+    r = py_object_call2(L, value);
+    Py_DECREF(value);
+    return r;
+}
+
+static int py_object_div(lua_State *L)
+{
+    int r=0;
+    PyObject *value;
+    if (lua_isuserdata(L, 1))
+    { py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
+      lua_remove(L, 1);
+      value = PyObject_GetAttrString(obj->o, "__div__");
+    }
+    else
+    { py_object *obj = (py_object*) luaL_checkudata(L, 2, POBJECT);
+      lua_remove(L, 2);
+      value = PyObject_GetAttrString(obj->o, "__rdiv__");
+    }
+    r = py_object_call2(L, value);
+    Py_DECREF(value);
+    return r;
+}
+
+static int py_object_add(lua_State *L)
+{
+    int r=0;
+    PyObject *value;
+    if (lua_isuserdata(L, 1))
+    { py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
+      lua_remove(L, 1);
+      value = PyObject_GetAttrString(obj->o, "__add__");
+    }
+    else
+    { py_object *obj = (py_object*) luaL_checkudata(L, 2, POBJECT);
+      lua_remove(L, 2);
+      value = PyObject_GetAttrString(obj->o, "__radd__");
+    }
+    r = py_object_call2(L, value);
+    Py_DECREF(value);
+    return r;
+}
+
+static int py_object_sub(lua_State *L)
+{
+    int r=0;
+    PyObject *value;
+    if (lua_isuserdata(L, 1))
+    { py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
+      lua_remove(L, 1);
+      value = PyObject_GetAttrString(obj->o, "__sub__");
+    }
+    else
+    { py_object *obj = (py_object*) luaL_checkudata(L, 2, POBJECT);
+      lua_remove(L, 2);
+      value = PyObject_GetAttrString(obj->o, "__rsub__");
+    }
+    r = py_object_call2(L, value);
+    Py_DECREF(value);
+    return r;
+}
+
+static int py_object_pow(lua_State *L)
+{
+    int r=0;
+    PyObject *value;
+    if (lua_isuserdata(L, 1))
+    { py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
+      lua_remove(L, 1);
+      value = PyObject_GetAttrString(obj->o, "__pow__");
+    }
+    else
+    { py_object *obj = (py_object*) luaL_checkudata(L, 2, POBJECT);
+      lua_remove(L, 2);
+      value = PyObject_GetAttrString(obj->o, "__rpow__");
+    }
+    r = py_object_call2(L, value);
+    Py_DECREF(value);
+    return r;
+}
+
 static const luaL_Reg py_object_lib[] = {
     {"__call",  py_object_call},
     {"__index", py_object_index},
     {"__newindex",  py_object_newindex},
     {"__gc",    py_object_gc},
     {"__tostring",  py_object_tostring},
+    {"__mul",   py_object_mul},
+    {"__div",   py_object_div},
+    {"__add",   py_object_add},
+    {"__sub",   py_object_sub},
+    {"__pow",   py_object_pow},
     {NULL, NULL}
 };
 
