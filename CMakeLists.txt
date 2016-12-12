@@ -12,6 +12,10 @@ find_package(PythonLibs REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
 include_directories(${PYTHON_INCLUDE_DIR})
 
+if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+  set(CMAKE_C_FLAGS "-Wall -pedantic -std=c99 ${CMAKE_C_FLAGS}")
+endif ()
+
 add_subdirectory(src)
 
 add_library(python MODULE $<TARGET_OBJECTS:src>)
