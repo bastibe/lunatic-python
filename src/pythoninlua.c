@@ -133,8 +133,9 @@ static int py_object_call(lua_State *L)
         lua_pushnil(L);  /* first key */
         while (lua_next(L, 2) != 0) {
             if (lua_isnumber(L, -2)) {
-                nargs = max(nargs, lua_tointeger(L, -2));
-	           }
+                int i = lua_tointeger(L, -2);
+                nargs = i < nargs ? nargs : i;
+            }
             lua_pop(L, 1);
         }
         args = PyTuple_New(nargs);
@@ -142,7 +143,7 @@ static int py_object_call(lua_State *L)
             PyErr_Print();
             return luaL_error(L, "failed to create arguments tuple");
         }
-	       pKywdArgs = PyDict_New();    
+        pKywdArgs = PyDict_New();    
         if (!pKywdArgs) {
             Py_DECREF(args);
             PyErr_Print();
@@ -151,22 +152,22 @@ static int py_object_call(lua_State *L)
         lua_pushnil(L);  /* first key */
         while (lua_next(L, 2) != 0) {
             if (lua_isnumber(L, -2)) {
-	               PyObject *arg = LuaConvert(L, -1);
+                PyObject *arg = LuaConvert(L, -1);
                 if (!arg) {
                     Py_DECREF(args);
                     Py_DECREF(pKywdArgs);
                     return luaL_error(L, "failed to convert argument #%d", lua_tointeger(L, -2));
                 }
-	               PyTuple_SetItem(args, lua_tointeger(L, -2)-1, arg);
-	           }
-	           else if (lua_isstring(L, -2)) {
-	               PyObject *arg = LuaConvert(L, -1);
+                PyTuple_SetItem(args, lua_tointeger(L, -2)-1, arg);
+            }
+            else if (lua_isstring(L, -2)) {
+                PyObject *arg = LuaConvert(L, -1);
                 if (!arg) {
                     Py_DECREF(args);
                     Py_DECREF(pKywdArgs);
-		                  return luaL_error(L, "failed to convert argument '%s'", lua_tostring(L, -2));
+                    return luaL_error(L, "failed to convert argument '%s'", lua_tostring(L, -2));
                 }
-		              PyDict_SetItemString(pKywdArgs, lua_tostring(L, -2), arg);
+                PyDict_SetItemString(pKywdArgs, lua_tostring(L, -2), arg);
                 Py_DECREF(arg);
             }
             lua_pop(L, 1);
