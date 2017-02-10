@@ -713,17 +713,14 @@ LUA_API int luaopen_python(lua_State *L)
     }
 
     /* Register 'none' */
-    lua_pushliteral(L, "Py_None");
     rc = py_convert_custom(L, Py_None, 0);
-    if (rc) {
-        lua_pushliteral(L, "none");
-        lua_pushvalue(L, -2);
-        lua_rawset(L, -5); /* python.none */
-        lua_rawset(L, LUA_REGISTRYINDEX); /* registry.Py_None */
-    } else {
-        lua_pop(L, 1);
-        luaL_error(L, "failed to convert none object");
-    }
+    if (!rc)
+      return luaL_error(L, "failed to convert none object");
 
-    return 0;
+    lua_pushvalue(L, -1);
+    lua_setfield(L, LUA_REGISTRYINDEX, "Py_None"); /* registry.Py_None */
+
+    lua_setfield(L, -2, "none"); /* python.none */
+
+    return 1;
 }
