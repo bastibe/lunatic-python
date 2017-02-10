@@ -50,8 +50,8 @@ PyObject *LuaConvert(lua_State *L, int n)
             break;
 
         case LUA_TSTRING: {
-            const char *s = lua_tostring(L, n);
-            int len = lua_strlen(L, n);
+            size_t len;
+            const char *s = lua_tolstring(L, n, &len);
             ret = PyUnicode_FromStringAndSize(s, len);
             break;
         }
@@ -67,13 +67,8 @@ PyObject *LuaConvert(lua_State *L, int n)
         }
 
         case LUA_TBOOLEAN:
-            if (lua_toboolean(L, n)) {
-                Py_INCREF(Py_True);
-                ret = Py_True;
-            } else {
-                Py_INCREF(Py_False);
-                ret = Py_False;
-            }
+            ret = lua_toboolean(L, n) ? Py_True : Py_False;
+            Py_INCREF(ret);
             break;
 
         case LUA_TUSERDATA: {
