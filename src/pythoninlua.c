@@ -104,9 +104,6 @@ int py_convert(lua_State *L, PyObject *o, int withnone)
         if (PyDict_Check(o) || PyList_Check(o) || PyTuple_Check(o))
             asindx = 1;
         ret = py_convert_custom(L, o, asindx);
-        if (ret && !asindx &&
-            (PyFunction_Check(o) || PyCFunction_Check(o)))
-            lua_pushcclosure(L, py_asfunc_call, 1);
     }
     return ret;
 }
