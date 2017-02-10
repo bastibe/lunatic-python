@@ -31,7 +31,8 @@
 #include "pythoninlua.h"
 #include "luainpython.h"
 
-static int py_asfunc_call(lua_State *L);
+static int py_asfunc_call(lua_State *);
+static int py_eval(lua_State *);
 
 static int py_convert_custom(lua_State *L, PyObject *o, int asindx)
 {
@@ -191,46 +192,6 @@ static int py_object_call(lua_State *L)
     Py_DECREF(args);
     if (pKywdArgs) Py_DECREF(pKywdArgs);
 
-    if (value) {
-        ret = py_convert(L, value, 0);
-        Py_DECREF(value);
-    } else {
-        PyErr_Print();
-        luaL_error(L, "error calling python function");
-    }
-
-    return ret;
-}
-
-static int py_object_call2(lua_State *L, PyObject *obj)
-{
-    PyObject *args;
-    PyObject *value;
-    int nargs = lua_gettop(L);
-    int ret = 0;
-    int i;
-
-    if (!PyCallable_Check(obj)) {
-        return luaL_error(L, "object is not callable");
-    }
-
-    args = PyTuple_New(nargs);
-    if (!args) {
-        PyErr_Print();
-        return luaL_error(L, "failed to create arguments tuple");
-    }
-
-    for (i = 0; i != nargs; i++) {
-        PyObject *arg = LuaConvert(L, i+1);
-        if (!arg) {
-            Py_DECREF(args);
-            return luaL_error(L, "failed to convert argument #%d", i+1);
-        }
-        PyTuple_SetItem(args, i, arg);
-    }
-
-    value = PyObject_Call(obj, args, NULL);
-    Py_DECREF(args);
     if (value) {
         ret = py_convert(L, value, 0);
         Py_DECREF(value);
@@ -428,99 +389,66 @@ static int py_object_tostring(lua_State *L)
     return 1;
 }
 
+static int py_operator_lambda(lua_State *L,  const char *op)
+{
+  static char script_buff[] = "lambda a, b: a    b";
+  static size_t len = sizeof(script_buff) / sizeof(script_buff[0]);
+  snprintf(script_buff, len, "lambda a, b: a %s b", op);
+
+  lua_pushcfunction(L, py_eval);
+  lua_pushlstring(L, script_buff, len);
+  lua_call(L, 1, 1);
+  return luaL_ref(L, LUA_REGISTRYINDEX);
+}
+
 static int py_object_mul(lua_State *L)
 {
-    int r=0;
-    PyObject *value;
-    if (lua_isuserdata(L, 1))
-    { py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
-      lua_remove(L, 1);
-      value = PyObject_GetAttrString(obj->o, "__mul__");
-    }
-    else
-    { py_object *obj = (py_object*) luaL_checkudata(L, 2, POBJECT);
-      lua_remove(L, 2);
-      value = PyObject_GetAttrString(obj->o, "__rmul__");
-    }
-    r = py_object_call2(L, value);
-    Py_DECREF(value);
-    return r;
+  static int op_ref = LUA_REFNIL;
+  if (op_ref == LUA_REFNIL) op_ref = py_operator_lambda(L, "*");
+
+  lua_rawgeti(L, LUA_REGISTRYINDEX, op_ref);
+  lua_insert(L, 1);
+  return py_object_call(L);
 }
 
 static int py_object_div(lua_State *L)
 {
-    int r=0;
-    PyObject *value;
-    if (lua_isuserdata(L, 1))
-    { py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
-      lua_remove(L, 1);
-      value = PyObject_GetAttrString(obj->o, "__div__");
-    }
-    else
-    { py_object *obj = (py_object*) luaL_checkudata(L, 2, POBJECT);
-      lua_remove(L, 2);
-      value = PyObject_GetAttrString(obj->o, "__rdiv__");
-    }
-    r = py_object_call2(L, value);
-    Py_DECREF(value);
-    return r;
+  static int op_ref = LUA_REFNIL;
+  if (op_ref == LUA_REFNIL) op_ref = py_operator_lambda(L, "/");
+
+  lua_rawgeti(L, LUA_REGISTRYINDEX, op_ref);
+  lua_insert(L, 1);
+  return py_object_call(L);
 }
 
 static int py_object_add(lua_State *L)
 {
-    int r=0;
-    PyObject *value;
-    if (lua_isuserdata(L, 1))
-    { py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
-      lua_remove(L, 1);
-      value = PyObject_GetAttrString(obj->o, "__add__");
-    }
-    else
-    { py_object *obj = (py_object*) luaL_checkudata(L, 2, POBJECT);
-      lua_remove(L, 2);
-      value = PyObject_GetAttrString(obj->o, "__radd__");
-    }
-    r = py_object_call2(L, value);
-    Py_DECREF(value);
-    return r;
+  static int op_ref = LUA_REFNIL;
+  if (op_ref == LUA_REFNIL) op_ref = py_operator_lambda(L, "+");
+
+  lua_rawgeti(L, LUA_REGISTRYINDEX, op_ref);
+  lua_insert(L, 1);
+  return py_object_call(L);
 }
 
 static int py_object_sub(lua_State *L)
 {
-    int r=0;
-    PyObject *value;
-    if (lua_isuserdata(L, 1))
-    { py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
-      lua_remove(L, 1);
-      value = PyObject_GetAttrString(obj->o, "__sub__");
-    }
-    else
-    { py_object *obj = (py_object*) luaL_checkudata(L, 2, POBJECT);
-      lua_remove(L, 2);
-      value = PyObject_GetAttrString(obj->o, "__rsub__");
-    }
-    r = py_object_call2(L, value);
-    Py_DECREF(value);
-    return r;
+  static int op_ref = LUA_REFNIL;
+  if (op_ref == LUA_REFNIL) op_ref = py_operator_lambda(L, "-");
+
+  lua_rawgeti(L, LUA_REGISTRYINDEX, op_ref);
+  lua_insert(L, 1);
+  return py_object_call(L);
 }
 
 static int py_object_pow(lua_State *L)
 {
-    int r=0;
-    PyObject *value;
-    if (lua_isuserdata(L, 1))
-    { py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
-      lua_remove(L, 1);
-      value = PyObject_GetAttrString(obj->o, "__pow__");
-    }
-    else
-    { py_object *obj = (py_object*) luaL_checkudata(L, 2, POBJECT);
-      lua_remove(L, 2);
-      value = PyObject_GetAttrString(obj->o, "__rpow__");
-    }
-    r = py_object_call2(L, value);
-    Py_DECREF(value);
-    return r;
+  static int op_ref = LUA_REFNIL;
+  if (op_ref == LUA_REFNIL) op_ref = py_operator_lambda(L, "**");
+
+  lua_rawgeti(L, LUA_REGISTRYINDEX, op_ref);
+  lua_insert(L, 1);
+  return py_object_call(L);
 }
 
 static const luaL_Reg py_object_lib[] = {
