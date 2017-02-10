@@ -674,11 +674,11 @@ LUA_API int luaopen_python(lua_State *L)
     int rc;
 
     /* Register module */
-    luaL_register(L, "python", py_lib);
+    luaL_newlib(L, py_lib);
 
     /* Register python object metatable */
     luaL_newmetatable(L, POBJECT);
-    luaL_register(L, NULL, py_object_lib);
+    luaL_setfuncs(L, py_object_lib, 0);
     lua_pop(L, 1);
 
     /* Initialize Lua state in Python territory */

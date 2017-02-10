@@ -336,7 +336,7 @@ static int LuaObject_length(LuaObject *obj)
 {
     int len;
     lua_rawgeti(LuaState, LUA_REGISTRYINDEX, ((LuaObject*)obj)->ref);
-    len = lua_objlen(LuaState, -1);
+    len = luaL_len(LuaState, -1);
     lua_settop(LuaState, 0);
     return len;
 }

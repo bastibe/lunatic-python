@@ -23,6 +23,12 @@
 #ifndef LUAINPYTHON_H
 #define LUAINPYTHON_H
 
+#if LUA_VERSION_NUM == 501
+  #define luaL_len lua_objlen
+  #define luaL_setfuncs(L, l, nup) luaL_register(L, NULL, (l))
+  #define luaL_newlib(L, l) (lua_newtable(L), luaL_register(L, NULL, (l)))
+#endif
+
 typedef struct {
     PyObject_HEAD
     int ref;
