@@ -704,7 +704,10 @@ LUA_API int luaopen_python(lua_State *L)
 
         mainm = PyImport_AddModule("__main__");
         if (!mainm)
+        {
+          Py_DECREF(luam);
           return luaL_error(L, "Can't get __main__ module");
+        }
 
         maind = PyModule_GetDict(mainm);
         PyDict_SetItemString(maind, "lua", luam);
