@@ -685,7 +685,8 @@ LUA_API int luaopen_python(lua_State *L)
     if (!LuaState) LuaState = L;
 
     /* Initialize Python interpreter */
-    if (!Py_IsInitialized()) {
+    if (!Py_IsInitialized())
+    {
         PyObject *luam, *mainm, *maind;
 #if PY_MAJOR_VERSION >= 3
         wchar_t *argv[] = {L"<lua>", 0};
@@ -698,18 +699,16 @@ LUA_API int luaopen_python(lua_State *L)
         PySys_SetArgv(1, argv);
         /* Import 'lua' automatically. */
         luam = PyImport_ImportModule("lua");
-        if (!luam) {
-            luaL_error(L, "Can't import lua module");
-        } else {
-            mainm = PyImport_AddModule("__main__");
-            if (!mainm) {
-                luaL_error(L, "Can't get __main__ module");
-            } else {
-                maind = PyModule_GetDict(mainm);
-                PyDict_SetItemString(maind, "lua", luam);
-                Py_DECREF(luam);
-            }
-        }
+        if (!luam)
+          return luaL_error(L, "Can't import lua module");
+
+        mainm = PyImport_AddModule("__main__");
+        if (!mainm)
+          return luaL_error(L, "Can't get __main__ module");
+
+        maind = PyModule_GetDict(mainm);
+        PyDict_SetItemString(maind, "lua", luam);
+        Py_DECREF(luam);
     }
 
     /* Register 'none' */
