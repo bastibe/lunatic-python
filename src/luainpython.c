@@ -35,7 +35,17 @@
 
 lua_State *LuaState = NULL;
 
-static PyObject *LuaObject_New(int n);
+static PyObject *LuaObject_New(lua_State *L, int n)
+{
+    LuaObject *obj = PyObject_New(LuaObject, &LuaObject_Type);
+    if (obj)
+    {
+        lua_pushvalue(L, n);
+        obj->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+        obj->refiter = 0;
+    }
+    return (PyObject*) obj;
+}
 
 PyObject *LuaConvert(lua_State *L, int n)
 {
@@ -84,7 +94,7 @@ PyObject *LuaConvert(lua_State *L, int n)
         }
 
         default:
-            ret = LuaObject_New(n);
+            ret = LuaObject_New(L, n);
             break;
     }
 
@@ -164,17 +174,6 @@ static PyObject *LuaCall(lua_State *L, PyObject *args)
     lua_settop(L, 0);
 
     return ret;
-}
-
-static PyObject *LuaObject_New(int n)
-{
-    LuaObject *obj = PyObject_New(LuaObject, &LuaObject_Type);
-    if (obj) {
-        lua_pushvalue(LuaState, n);
-        obj->ref = luaL_ref(LuaState, LUA_REGISTRYINDEX);
-        obj->refiter = 0;
-    }
-    return (PyObject*) obj;
 }
 
 static void LuaObject_dealloc(LuaObject *self)
