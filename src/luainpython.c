@@ -483,7 +483,8 @@ static PyObject *Lua_require(PyObject *self, PyObject *args)
     return LuaCall(LuaState, args);
 }
 
-static PyMethodDef lua_methods[] = {
+static PyMethodDef lua_methods[] =
+{
     {"execute",    Lua_execute,    METH_VARARGS,        NULL},
     {"eval",       Lua_eval,       METH_VARARGS,        NULL},
     {"globals",    Lua_globals,    METH_NOARGS,         NULL},
@@ -492,7 +493,8 @@ static PyMethodDef lua_methods[] = {
 };
 
 #if PY_MAJOR_VERSION >= 3
-static struct PyModuleDef lua_module = {
+static struct PyModuleDef lua_module =
+{
     PyModuleDef_HEAD_INIT,
     "lua",
     "Lunatic-Python Python-Lua bridge",
@@ -503,22 +505,19 @@ static struct PyModuleDef lua_module = {
 
 PyMODINIT_FUNC PyInit_lua(void)
 {
-    PyObject *m;
-
+  PyObject *m;
+  if (PyType_Ready(&LuaObject_Type) < 0 ||
 #if PY_MAJOR_VERSION >= 3
-    if (PyType_Ready(&LuaObject_Type) < 0) return NULL;
-    m = PyModule_Create(&lua_module);
-    if (m == NULL) return NULL;
+      (m = PyModule_Create(&lua_module)) == NULL)
+      return NULL;
 #else
-    if (PyType_Ready(&LuaObject_Type) < 0) return;
-    m = Py_InitModule3("lua", lua_methods,
-                       "Lunatic-Python Python-Lua bridge");
-    if (m == NULL) return;
+      (m = Py_InitModule3("lua", lua_methods,
+                          "Lunatic-Python Python-Lua bridge")) == NULL)
+      return;
 #endif
 
-    Py_INCREF(&LuaObject_Type);
-
-    if (!LuaState) {
+    if (!LuaState)
+    {
         LuaState = luaL_newstate();
         luaL_openlibs(LuaState);
         luaopen_python(LuaState);
