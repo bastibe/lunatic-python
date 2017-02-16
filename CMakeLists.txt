@@ -12,9 +12,6 @@ find_package(PythonLibs REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
 include_directories(${PYTHON_INCLUDE_DIR})
 
-if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-  set(CMAKE_C_FLAGS "-Wall -pedantic -std=c99 ${CMAKE_C_FLAGS}")
-endif ()
 
 add_subdirectory(src)
 
@@ -23,14 +20,14 @@ set_target_properties(python PROPERTIES
                              PREFIX "")
 
 add_library(lua MODULE $<TARGET_OBJECTS:src>)
-if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+if (WIN32)
   set_target_properties(lua PROPERTIES 
                             PREFIX ""
                             SUFFIX ".pyd")
-else ()
+else (WIN32)
   set_target_properties(lua PROPERTIES 
                             PREFIX "")
-endif ()
+endif (WIN32)
 
 target_link_libraries(lua ${LUA_LIBRARIES} ${PYTHON_LIBRARIES})
 target_link_libraries(python ${LUA_LIBRARIES} ${PYTHON_LIBRARIES})
