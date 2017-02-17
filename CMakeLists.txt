@@ -9,9 +9,6 @@ project(Lunatic)
 find_package(Lua 5.1 REQUIRED)
 find_package(PythonLibs REQUIRED)
 
-include_directories(${LUA_INCLUDE_DIR})
-include_directories(${PYTHON_INCLUDE_DIR})
-
 
 add_subdirectory(src)
 
