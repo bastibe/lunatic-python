@@ -4,10 +4,11 @@ set(CMAKE_BUILD_TYPE_INIT "Release")
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${EXECUTABLE_OUTPUT_PATH})
 
+
 project(Lunatic)
 
-find_package(Lua 5.1 REQUIRED)
-find_package(PythonLibs REQUIRED)
+find_package(Lua        5.1 REQUIRED)
+find_package(PythonLibs 2.7 REQUIRED)
 
 
 add_subdirectory(src)
@@ -26,5 +27,5 @@ else (WIN32)
                             PREFIX "")
 endif (WIN32)
 
-target_link_libraries(lua ${LUA_LIBRARIES} ${PYTHON_LIBRARIES})
-target_link_libraries(python ${LUA_LIBRARIES} ${PYTHON_LIBRARIES})
+target_link_libraries(lua     ${LUA_LIBRARIES} ${PYTHON_LIBRARIES})
+target_link_libraries(python  ${LUA_LIBRARIES} ${PYTHON_LIBRARIES})
