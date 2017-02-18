@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/greatwolf/lunatic-python.svg?branch=master)](https://travis-ci.org/greatwolf/lunatic-python)
+
 Details
 =======
 
