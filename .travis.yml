@@ -1,0 +1,27 @@
+language: c
+
+sudo: required
+dist: trusty
+
+compiler:
+  - gcc
+
+env:
+  - LUA_ENV=lua5.1  PY_ENV=python2.7    m_SUFFIX=
+  - LUA_ENV=lua5.3  PY_ENV=python2.7    m_SUFFIX=
+  - LUA_ENV=lua5.1  PY_ENV=python3.6    m_SUFFIX=m
+  - LUA_ENV=lua5.3  PY_ENV=python3.6    m_SUFFIX=m
+
+
+before_install:
+  - sudo add-apt-repository -y "deb http://ppa.launchpad.net/grilo-team/travis/ubuntu trusty main"
+  - sudo add-apt-repository -y "deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu trusty main"
+  - sudo apt-get update -qq
+
+install:
+  - sudo apt-get install -qq --force-yes lib${LUA_ENV}-dev
+  - sudo apt-get install -qq --force-yes lib${PY_ENV}-dev
+
+script:
+  - cmake -B./build -H. -DPYTHON_INCLUDE_DIR=/usr/include/${PY_ENV}${m_SUFFIX} -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/lib${PY_ENV}${m_SUFFIX}.so
+  - cmake --build ./build
