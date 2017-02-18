@@ -186,6 +186,7 @@ static void LuaObject_dealloc(LuaObject *self)
 
 static PyObject *LuaObject_getattr(PyObject *obj, PyObject *attr)
 {
+    int rc = py_convert(LuaState, attr, 0);
     lua_rawgeti(LuaState, LUA_REGISTRYINDEX, ((LuaObject*)obj)->ref);
     if (lua_isnil(LuaState, -1)) {
         lua_pop(LuaState, 1);
@@ -201,17 +202,20 @@ static PyObject *LuaObject_getattr(PyObject *obj, PyObject *attr)
         PyErr_SetString(PyExc_RuntimeError, "not an indexable value");
         return NULL;
     }
+	
+    {
+        PyObject *ret = NULL;
 
-    PyObject *ret = NULL;
-    int rc = py_convert(LuaState, attr, 0);
-    if (rc) {
-        lua_gettable(LuaState, -2);
-        ret = LuaConvert(LuaState, -1);
-    } else {
-        PyErr_SetString(PyExc_ValueError, "can't convert attr/key");
+        if (rc) {
+            lua_gettable(LuaState, -2);
+            ret = LuaConvert(LuaState, -1);
+        } else {
+            PyErr_SetString(PyExc_ValueError, "can't convert attr/key");
+        }
+        lua_settop(LuaState, 0);
+
+        return ret;
     }
-    lua_settop(LuaState, 0);
-    return ret;
 }
 
 static int LuaObject_setattr(PyObject *obj, PyObject *attr, PyObject *value)
