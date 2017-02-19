@@ -25,6 +25,11 @@
 
 #define POBJECT "POBJECT"
 
+#if PY_MAJOR_VERSION < 3
+  #define PyBytes_Check           PyString_Check
+  #define PyBytes_AsStringAndSize PyString_AsStringAndSize
+#endif
+
 int py_convert(lua_State *L, PyObject *o, int withnone);
 
 typedef struct {

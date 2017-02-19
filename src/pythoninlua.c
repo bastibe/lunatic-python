@@ -74,17 +74,15 @@ int py_convert(lua_State *L, PyObject *o, int withnone)
     } else if (o == Py_False) {
         lua_pushboolean(L, 0);
         ret = 1;
-#if PY_MAJOR_VERSION >= 3
-    } else if (PyUnicode_Check(o)) {
-        Py_ssize_t len;
-        char *s = PyUnicode_AsUTF8AndSize(o, &len);
-#else
-    } else if (PyString_Check(o)) {
+    } else if (PyUnicode_Check(o) || PyBytes_Check(o)) {
+        PyObject *bstr = PyUnicode_AsEncodedString(o, "utf-8", NULL);
         Py_ssize_t len;
         char *s;
-        PyString_AsStringAndSize(o, &s, &len);
-#endif
+
+        PyErr_Clear();
+        PyBytes_AsStringAndSize(bstr ? bstr : o, &s, &len);
         lua_pushlstring(L, s, len);
+        if (bstr) Py_DECREF(bstr);
         ret = 1;
 #if PY_MAJOR_VERSION < 3
     } else if (PyInt_Check(o)) {

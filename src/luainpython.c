@@ -63,6 +63,11 @@ PyObject *LuaConvert(lua_State *L, int n)
             size_t len;
             const char *s = lua_tolstring(L, n, &len);
             ret = PyUnicode_FromStringAndSize(s, len);
+            if (!ret)
+            {
+              PyErr_Clear();
+              ret = PyBytes_FromStringAndSize(s, len);
+            }
             break;
         }
 
