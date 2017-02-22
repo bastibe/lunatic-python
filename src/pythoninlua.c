@@ -457,41 +457,30 @@ static const luaL_Reg py_object_lib[] = {
 
 static int py_run(lua_State *L, int eval)
 {
-    const char *s;
-    char *buffer = NULL;
+    const char *s = luaL_checkstring(L, 1);
     PyObject *m, *d, *o;
     int ret = 0;
-    int len;
 
-    s = luaL_checkstring(L, 1);
-    if (!s)
-        return 0;
+    lua_settop(L, 1);
 
-    if (!eval) {
-        len = strlen(s)+1;
-        buffer = (char *) malloc(len+1);
-        if (!buffer) {
-            return luaL_error(L, "Failed allocating buffer for execution");
-        }
-        strcpy(buffer, s);
-        buffer[len-1] = '\n';
-        buffer[len] = '\0';
-        s = buffer;
+    if (!eval)
+    {
+        lua_pushliteral(L, "\n");
+        lua_concat(L, 2);
+
+        s = luaL_checkstring(L, 1);
     }
 
     m = PyImport_AddModule("__main__");
-    if (!m) {
-        free(buffer);
+    if (!m)
         return luaL_error(L, "Can't get __main__ module");
-    }
+
     d = PyModule_GetDict(m);
 
     o = PyRun_StringFlags(s, eval ? Py_eval_input : Py_single_input,
                           d, d, NULL);
-
-    free(buffer);
-
-    if (!o) {
+    if (!o)
+    {
         PyErr_Print();
         return 0;
     }
