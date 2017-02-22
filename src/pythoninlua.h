@@ -30,7 +30,7 @@
   #define PyBytes_AsStringAndSize PyString_AsStringAndSize
 #endif
 
-int py_convert(lua_State *L, PyObject *o, int withnone);
+int py_convert(lua_State *L, PyObject *o);
 
 typedef struct {
     PyObject *o;

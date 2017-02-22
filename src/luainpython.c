@@ -127,7 +127,7 @@ static PyObject *LuaCall(lua_State *L, PyObject *args)
             lua_settop(L, 0);
             return NULL;
         }
-        rc = py_convert(L, arg, 0);
+        rc = py_convert(L, arg);
         if (!rc) {
             PyErr_Format(PyExc_TypeError,
                      "failed to convert argument #%d", i);
@@ -208,7 +208,7 @@ static PyObject *LuaObject_getattr(PyObject *obj, PyObject *attr)
     }
 
     PyObject *ret = NULL;
-    int rc = py_convert(LuaState, attr, 0);
+    int rc = py_convert(LuaState, attr);
     if (rc) {
         lua_gettable(LuaState, -2);
         ret = LuaConvert(LuaState, -1);
@@ -234,13 +234,13 @@ static int LuaObject_setattr(PyObject *obj, PyObject *attr, PyObject *value)
         PyErr_SetString(PyExc_TypeError, "Lua object is not a table");
         return -1;
     }
-    rc = py_convert(LuaState, attr, 0);
+    rc = py_convert(LuaState, attr);
     if (rc) {
         if (NULL == value) {
             lua_pushnil(LuaState);
             rc = 1;
         } else {
-            rc = py_convert(LuaState, value, 0);
+            rc = py_convert(LuaState, value);
         }
 
         if (rc) {
