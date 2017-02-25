@@ -19,9 +19,16 @@ before_install:
   - sudo apt-get update -qq
 
 install:
+  - sudo apt-get install -qq --force-yes ${LUA_ENV}
+  - sudo apt-get install -qq --force-yes ${PY_ENV}
   - sudo apt-get install -qq --force-yes lib${LUA_ENV}-dev
   - sudo apt-get install -qq --force-yes lib${PY_ENV}-dev
+  - ${LUA_ENV} -v
+  - ${PY_ENV} --version
 
 script:
   - cmake -B./build -H. -DPYTHON_INCLUDE_DIR=/usr/include/${PY_ENV}${m_SUFFIX} -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/lib${PY_ENV}${m_SUFFIX}.so
   - cmake --build ./build
+  - cd ./build/bin
+  - ${PY_ENV} ../../tests/test_lua.py
+  - ${LUA_ENV} ../../tests/test_py.lua
