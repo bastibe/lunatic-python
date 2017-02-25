@@ -36,19 +36,17 @@ static int py_eval(lua_State *);
 
 static int py_convert_custom(lua_State *L, PyObject *o, int asindx)
 {
-    int ret = 0;
     py_object *obj = (py_object*) lua_newuserdata(L, sizeof(py_object));
-    if (obj) {
-        Py_INCREF(o);
-        obj->o = o;
-        obj->asindx = asindx;
-        luaL_getmetatable(L, POBJECT);
-        lua_setmetatable(L, -2);
-        ret = 1;
-    } else {
+    if (!obj)
         luaL_error(L, "failed to allocate userdata object");
-    }
-    return ret;
+
+    Py_INCREF(o);
+    obj->o = o;
+    obj->asindx = asindx;
+    luaL_getmetatable(L, POBJECT);
+    lua_setmetatable(L, -2);
+
+    return 1;
 }
 
 int py_convert(lua_State *L, PyObject *o)
