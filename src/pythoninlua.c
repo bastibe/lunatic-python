@@ -99,20 +99,17 @@ int py_convert(lua_State *L, PyObject *o)
 
 static int py_object_call(lua_State *L)
 {
-    py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
     PyObject *args;
     PyObject *value;
-    PyObject* pKywdArgs = NULL;
+    PyObject *pKywdArgs = NULL;
     int nargs = lua_gettop(L)-1;
     int ret = 0;
     int i;
+    py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
+    assert(obj);
 
-    if (!obj) {
-        return luaL_argerror(L, 1, "not a python object");
-    }
-    if (!PyCallable_Check(obj->o)) {
+    if (!PyCallable_Check(obj->o))
         return luaL_error(L, "object is not callable");
-    }
 
     // passing a single table forces named keyword call style, e.g. plt.plot{x, y, c='red'}
     if (nargs==1 && lua_istable(L, 2)) {
@@ -227,31 +224,25 @@ static int _p_object_newindex_set(lua_State *L, py_object *obj,
 
 static int py_object_newindex_set(lua_State *L)
 {
-    py_object *obj = (py_object*) luaL_checkudata(L, lua_upvalueindex(1),
-                            POBJECT);
-    if (lua_gettop(L) != 2) {
+    py_object *obj = (py_object*) luaL_checkudata(L, lua_upvalueindex(1), POBJECT);
+    if (lua_gettop(L) != 2)
         return luaL_error(L, "invalid arguments");
-    }
+
     return _p_object_newindex_set(L, obj, 1, 2);
 }
 
 static int py_object_newindex(lua_State *L)
 {
-    py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
-    const char *attr;
     PyObject *value;
+    const char *attr;
+    py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
+    assert(obj);
 
-    if (!obj) {
-        return luaL_argerror(L, 1, "not a python object");
-    }
-
-    if (obj->asindx || lua_type(L, 2)!=LUA_TSTRING)
+    if (obj->asindx || lua_type(L, 2) != LUA_TSTRING)
         return _p_object_newindex_set(L, obj, 2, 3);
 
     attr = luaL_checkstring(L, 2);
-    if (!attr) {
-        return luaL_argerror(L, 2, "string needed");
-    }
+    assert(attr);
 
     value = LuaConvert(L, 3);
     if (!value) {
@@ -298,33 +289,27 @@ static int _p_object_index_get(lua_State *L, py_object *obj, int keyn)
 
 static int py_object_index_get(lua_State *L)
 {
-    py_object *obj = (py_object*) luaL_checkudata(L, lua_upvalueindex(1),
-                            POBJECT);
+    py_object *obj = (py_object*) luaL_checkudata(L, lua_upvalueindex(1), POBJECT);
     int top = lua_gettop(L);
-    if (top < 1 || top > 2) {
+    if (top < 1 || top > 2)
         return luaL_error(L, "invalid arguments");
-    }
+
     return _p_object_index_get(L, obj, 1);
 }
 
 static int py_object_index(lua_State *L)
 {
-    py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
-    const char *attr;
-    PyObject *value;
     int ret = 0;
+    PyObject *value;
+    const char *attr;
+    py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
+    assert(obj);
 
-    if (!obj) {
-        return luaL_argerror(L, 1, "not a python object");
-    }
-
-    if (obj->asindx || lua_type(L, 2)!=LUA_TSTRING)
+    if (obj->asindx || lua_type(L, 2) != LUA_TSTRING)
         return _p_object_index_get(L, obj, 2);
 
     attr = luaL_checkstring(L, 2);
-    if (!attr) {
-        return luaL_argerror(L, 2, "string needed");
-    }
+    assert(attr);
 
     if (attr[0] == '_' && strcmp(attr, "__get") == 0) {
         lua_pushvalue(L, 1);
@@ -352,27 +337,30 @@ static int py_object_index(lua_State *L)
 static int py_object_gc(lua_State *L)
 {
     py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
-    if (obj) {
-        Py_DECREF(obj->o);
-    }
+    assert(obj);
+
+    Py_DECREF(obj->o);
     return 0;
 }
 
 static int py_object_tostring(lua_State *L)
 {
     py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
-    if (obj) {
-        PyObject *repr = PyObject_Str(obj->o);
-        if (!repr) {
-            char buf[256];
-            snprintf(buf, 256, "python object: %p", obj->o);
-            lua_pushstring(L, buf);
-            PyErr_Clear();
-        } else {
-            py_convert(L, repr);
-            assert(lua_type(L, -1) == LUA_TSTRING);
-            Py_DECREF(repr);
-        }
+    assert(obj);
+
+    PyObject *repr = PyObject_Str(obj->o);
+    if (!repr)
+    {
+        char buf[256];
+        snprintf(buf, 256, "python object: %p", obj->o);
+        lua_pushstring(L, buf);
+        PyErr_Clear();
+    }
+    else
+    {
+        py_convert(L, repr);
+        assert(lua_type(L, -1) == LUA_TSTRING);
+        Py_DECREF(repr);
     }
     return 1;
 }
@@ -439,7 +427,8 @@ static int py_object_pow(lua_State *L)
   return py_object_call(L);
 }
 
-static const luaL_Reg py_object_lib[] = {
+static const luaL_Reg py_object_lib[] =
+{
     {"__call",  py_object_call},
     {"__index", py_object_index},
     {"__newindex",  py_object_newindex},
@@ -509,8 +498,7 @@ static int py_eval(lua_State *L)
 static int py_asindx(lua_State *L)
 {
     py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
-    if (!obj)
-        return luaL_argerror(L, 1, "not a python object");
+    assert(obj);
 
     return py_convert_custom(L, obj->o, 1);
 }
@@ -518,8 +506,7 @@ static int py_asindx(lua_State *L)
 static int py_asattr(lua_State *L)
 {
     py_object *obj = (py_object*) luaL_checkudata(L, 1, POBJECT);
-    if (!obj)
-        return luaL_argerror(L, 1, "not a python object");
+    assert(obj);
 
     return py_convert_custom(L, obj->o, 0);
 }
@@ -533,15 +520,10 @@ static int py_asfunc_call(lua_State *L)
 
 static int py_asfunc(lua_State *L)
 {
-    int ret = 0;
-    if (luaL_checkudata(L, 1, POBJECT)) {
-        lua_pushcclosure(L, py_asfunc_call, 1);
-        ret = 1;
-    } else {
-        luaL_argerror(L, 1, "not a python object");
-    }
+    luaL_checkudata(L, 1, POBJECT);
+    lua_pushcclosure(L, py_asfunc_call, 1);
 
-    return ret;
+    return 1;
 }
 
 static int py_globals(lua_State *L)
@@ -604,16 +586,11 @@ static int py_builtins(lua_State *L)
 static int py_import(lua_State *L)
 {
     const char *name = luaL_checkstring(L, 1);
-    PyObject *module;
+    PyObject *module = PyImport_ImportModule((char*)name);
     int ret;
 
-    if (!name) {
-        return luaL_argerror(L, 1, "module name expected");
-    }
-
-    module = PyImport_ImportModule((char*)name);
-
-    if (!module) {
+    if (!module)
+    {
         PyErr_Print();
         return luaL_error(L, "failed importing '%s'", name);
     }
@@ -633,7 +610,8 @@ py_object* luaPy_to_pobject(lua_State *L, int n)
     return is_pobject ? (py_object *) lua_touserdata(L, n) : NULL;
 }
 
-static const luaL_Reg py_lib[] = {
+static const luaL_Reg py_lib[] =
+{
     {"execute", py_execute},
     {"eval",    py_eval},
     {"asindx",  py_asindx},
