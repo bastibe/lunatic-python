@@ -32,12 +32,13 @@
 
 int py_convert(lua_State *L, PyObject *o);
 
-typedef struct {
+typedef struct
+{
     PyObject *o;
     int asindx;
 } py_object;
 
-py_object* luaPy_to_pobject(lua_State *L, int n);
-LUA_API int luaopen_python(lua_State *L);
+py_object*    luaPy_to_pobject(lua_State *L, int n);
+LUA_API int   luaopen_python(lua_State *L);
 
 #endif

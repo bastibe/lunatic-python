@@ -29,7 +29,8 @@
   #define luaL_newlib(L, l) (lua_newtable(L), luaL_register(L, NULL, (l)))
 #endif
 
-typedef struct {
+typedef struct
+{
     PyObject_HEAD
     int ref;
     int refiter;
@@ -39,7 +40,7 @@ extern PyTypeObject LuaObject_Type;
 
 #define LuaObject_Check(op) PyObject_TypeCheck(op, &LuaObject_Type)
 
-PyObject *LuaConvert(lua_State *L, int n);
+PyObject* LuaConvert(lua_State *L, int n);
 
 extern lua_State *LuaState;
 
