@@ -520,7 +520,11 @@ static int py_asfunc_call(lua_State *L)
 
 static int py_asfunc(lua_State *L)
 {
-    luaL_checkudata(L, 1, POBJECT);
+    py_object *obj = luaL_checkudata(L, 1, POBJECT);
+    if (!PyCallable_Check(obj->o))
+        return luaL_error(L, "object is not callable");
+
+    lua_settop(L, 1);
     lua_pushcclosure(L, py_asfunc_call, 1);
 
     return 1;
