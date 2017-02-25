@@ -11,7 +11,7 @@ True
 >>> lg.d = d
 >>> lua.execute("d['key'] = 'value'")
 >>> d
-{'key': 'value'}
+{...'key': ...'value'}
 
 >>> d2 = lua.eval("d")
 >>> d is d2
@@ -45,21 +45,23 @@ True
 >>> t = lua.eval("{a=1, b=2, c=3}")
 >>> for k in l:
 ...   show(k, t[k])
-key is 'a' and value is 1
-key is 'b' and value is 2
-key is 'c' and value is 3
+key is 'a' and value is 1...
+key is 'b' and value is 2...
+key is 'c' and value is 3...
 
 """
 
-import sys
-import lua
+import sys, os
+sys.path.append(os.getcwd())
+
 
 class MyClass:
     def __repr__(self): return '<MyClass>'
 
 obj = MyClass()
 
+
 if __name__ == '__main__':
+    import lua
     import doctest
-    sys.path.append("../../build/bin")
     doctest.testmod(optionflags=doctest.ELLIPSIS)
