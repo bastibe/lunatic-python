@@ -301,6 +301,47 @@ static PyObject *LuaObject_str(PyObject *obj)
     return ret;
 }
 
+static int LuaObject_pcmp(lua_State *L)
+{
+  int op = lua_tointeger(L, -3);
+  switch(op)
+  {
+    case Py_EQ:
+      lua_pushboolean(L, lua_compare(L, -2, -1, LUA_OPEQ));
+      break;
+    case Py_NE:
+      lua_pushboolean(L, !lua_compare(L, -2, -1, LUA_OPEQ));
+      break;
+    case Py_GT:
+      lua_insert(LuaState, -2);
+    case Py_LT:
+      lua_pushboolean(L, lua_compare(L, -2, -1, LUA_OPLT));
+      break;
+    case Py_GE:
+      lua_insert(LuaState, -2);
+    case Py_LE:
+      lua_pushboolean(L, lua_compare(L, -2, -1, LUA_OPLE));
+  }
+
+  return 1;
+}
+
+static PyObject* LuaObject_richcmp(PyObject *lhs, PyObject *rhs, int op)
+{
+  if (!LuaObject_Check(rhs)) return Py_False;
+
+  lua_pushcfunction(LuaState, LuaObject_pcmp);
+  lua_pushinteger(LuaState, op);
+  lua_rawgeti(LuaState, LUA_REGISTRYINDEX, ((LuaObject *)lhs)->ref);
+  lua_rawgeti(LuaState, LUA_REGISTRYINDEX, ((LuaObject *)rhs)->ref);
+  if (lua_pcall(LuaState, 3, 1, 0) != LUA_OK)
+  {
+    PyErr_SetString(PyExc_RuntimeError, lua_tostring(LuaState, -1));
+    return NULL;
+  }
+  return lua_toboolean(LuaState, -1) ? Py_True : Py_False;
+}
+
 static PyObject *LuaObject_call(PyObject *obj, PyObject *args)
 {
     lua_settop(LuaState, 0);
@@ -390,7 +431,7 @@ PyTypeObject LuaObject_Type = {
     "custom lua object",      /*tp_doc*/
     0,                        /*tp_traverse*/
     0,                        /*tp_clear*/
-    0,                        /*tp_richcompare*/
+    LuaObject_richcmp,        /*tp_richcompare*/
     0,                        /*tp_weaklistoffset*/
     PyObject_SelfIter,        /*tp_iter*/
     (iternextfunc)LuaObject_iternext, /*tp_iternext*/
