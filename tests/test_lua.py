@@ -17,9 +17,9 @@ True
 
 >>> lua.execute("x = {1, 2, 3, foo = {4, 5}}")
 >>> lg.x[1], lg.x[2], lg.x[3]
-(1, 2, 3)
+(1..., 2..., 3...)
 >>> lg.x['foo'][1], lg.x['foo'][2]
-(4, 5)
+(4..., 5...)
 
 >>> lua.require
 <built-in function require>
