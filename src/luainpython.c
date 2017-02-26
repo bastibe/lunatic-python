@@ -301,6 +301,25 @@ static PyObject *LuaObject_str(PyObject *obj)
     return ret;
 }
 
+#if LUA_VERSION_NUM == 501
+enum
+{
+  LUA_OK, LUA_OPEQ, LUA_OPLT, LUA_OPLE,
+};
+static int lua_compare(lua_State *L, int lhs, int rhs, int op)
+{
+  switch(op)
+  {
+    case LUA_OPEQ:
+      return lua_equal(L, lhs, rhs);
+    case LUA_OPLT:
+      return lua_lessthan(L, lhs, rhs);
+    case LUA_OPLE:
+      return lua_lessthan(L, lhs, rhs) || lua_equal(L, lhs, rhs);
+  }
+  return 0;
+}
+#endif
 static int LuaObject_pcmp(lua_State *L)
 {
   int op = lua_tointeger(L, -3);
