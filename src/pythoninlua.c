@@ -89,9 +89,7 @@ int py_convert(lua_State *L, PyObject *o)
         lua_rawgeti(L, LUA_REGISTRYINDEX, ((LuaObject*)o)->ref);
         ret = 1;
     } else {
-        int asindx = 0;
-        if (PyDict_Check(o) || PyList_Check(o) || PyTuple_Check(o))
-            asindx = 1;
+        int asindx = PyDict_Check(o) || PyList_Check(o) || PyTuple_Check(o);
         ret = py_convert_custom(L, o, asindx);
     }
     return ret;
