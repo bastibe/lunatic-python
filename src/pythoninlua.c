@@ -425,7 +425,7 @@ static int py_object_pow(lua_State *L)
   return py_object_call(L);
 }
 
-static const luaL_Reg py_object_lib[] =
+static const luaL_Reg py_object_mt[] =
 {
     {"__call",  py_object_call},
     {"__index", py_object_index},
@@ -635,7 +635,7 @@ LUA_API int luaopen_python(lua_State *L)
 
     /* Register python object metatable */
     luaL_newmetatable(L, POBJECT);
-    luaL_setfuncs(L, py_object_lib, 0);
+    luaL_setfuncs(L, py_object_mt, 0);
     lua_pop(L, 1);
 
     /* Initialize Lua state in Python territory */
