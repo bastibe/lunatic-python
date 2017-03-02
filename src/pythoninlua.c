@@ -375,55 +375,23 @@ static int py_operator_lambda(lua_State *L,  const char *op)
   return luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
-static int py_object_mul(lua_State *L)
-{
-  static int op_ref = LUA_REFNIL;
-  if (op_ref == LUA_REFNIL) op_ref = py_operator_lambda(L, "*");
+#define make_pyoperator(opname, opliteral) \
+  static int py_object_ ## opname(lua_State *L) \
+  { \
+    static int op_ref = LUA_REFNIL; \
+    if (op_ref == LUA_REFNIL) op_ref = py_operator_lambda(L, opliteral); \
+    \
+    lua_rawgeti(L, LUA_REGISTRYINDEX, op_ref); \
+    lua_insert(L, 1); \
+    return py_object_call(L); \
+  } \
+  struct opname ## __LINE__ // force semi
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, op_ref);
-  lua_insert(L, 1);
-  return py_object_call(L);
-}
-
-static int py_object_div(lua_State *L)
-{
-  static int op_ref = LUA_REFNIL;
-  if (op_ref == LUA_REFNIL) op_ref = py_operator_lambda(L, "/");
-
-  lua_rawgeti(L, LUA_REGISTRYINDEX, op_ref);
-  lua_insert(L, 1);
-  return py_object_call(L);
-}
-
-static int py_object_add(lua_State *L)
-{
-  static int op_ref = LUA_REFNIL;
-  if (op_ref == LUA_REFNIL) op_ref = py_operator_lambda(L, "+");
-
-  lua_rawgeti(L, LUA_REGISTRYINDEX, op_ref);
-  lua_insert(L, 1);
-  return py_object_call(L);
-}
-
-static int py_object_sub(lua_State *L)
-{
-  static int op_ref = LUA_REFNIL;
-  if (op_ref == LUA_REFNIL) op_ref = py_operator_lambda(L, "-");
-
-  lua_rawgeti(L, LUA_REGISTRYINDEX, op_ref);
-  lua_insert(L, 1);
-  return py_object_call(L);
-}
-
-static int py_object_pow(lua_State *L)
-{
-  static int op_ref = LUA_REFNIL;
-  if (op_ref == LUA_REFNIL) op_ref = py_operator_lambda(L, "**");
-
-  lua_rawgeti(L, LUA_REGISTRYINDEX, op_ref);
-  lua_insert(L, 1);
-  return py_object_call(L);
-}
+make_pyoperator(_pow, "**");
+make_pyoperator(_mul, "*");
+make_pyoperator(_div, "/");
+make_pyoperator(_add, "+");
+make_pyoperator(_sub, "-");
 
 static const luaL_Reg py_object_mt[] =
 {
@@ -432,11 +400,11 @@ static const luaL_Reg py_object_mt[] =
     {"__newindex",  py_object_newindex},
     {"__gc",    py_object_gc},
     {"__tostring",  py_object_tostring},
-    {"__mul",   py_object_mul},
-    {"__div",   py_object_div},
-    {"__add",   py_object_add},
-    {"__sub",   py_object_sub},
-    {"__pow",   py_object_pow},
+    {"__pow",   py_object__pow},
+    {"__mul",   py_object__mul},
+    {"__div",   py_object__div},
+    {"__add",   py_object__add},
+    {"__sub",   py_object__sub},
     {NULL, NULL}
 };
 
