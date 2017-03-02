@@ -532,7 +532,7 @@ PyObject *Lua_globals(PyObject *self, PyObject *args)
     ret = LuaConvert(LuaState, -1);
     if (!ret)
         PyErr_Format(PyExc_TypeError,
-                 "failed to convert globals table");
+                     "failed to convert globals table");
     lua_settop(LuaState, 0);
     return ret;
 }
