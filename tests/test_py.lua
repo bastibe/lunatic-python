@@ -25,3 +25,7 @@ assert(d.key == 'newvalue', d.key)
 l = python.eval "['hello']"
 assert(tostring(l * 3) == "['hello', 'hello', 'hello']")
 assert(tostring(l + python.eval "['bye']") == "['hello', 'bye']")
+
+-- Test that Python C module can access Py Runtime symbols
+ctypes = python.import 'ctypes'
+assert(tostring(ctypes):match "module 'ctypes'")
