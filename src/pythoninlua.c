@@ -21,6 +21,7 @@
 
 */
 #include <Python.h>
+#include <dlfcn.h>
 
 /* need this to build with Lua 5.2: defines luaL_register() macro */
 #define LUA_COMPAT_MODULE
@@ -620,6 +621,20 @@ LUA_API int luaopen_python(lua_State *L)
 #endif
         Py_SetProgramName(argv[0]);
         PyImport_AppendInittab("lua", PyInit_lua);
+
+        /* Loading python library symbols so that dynamic extensions don't throw symbol not found error.           
+           Ref Link: http://stackoverflow.com/questions/29880931/importerror-and-pyexc-systemerror-while-embedding-python-script-within-c-for-pam
+        */
+        char str_python_lib[20];
+#ifdef _WIN32
+        sprintf(str_python_lib, "libpython%d.%d.dll", PY_MAJOR_VERSION, PY_MINOR_VERSION);
+#elif defined __unix__
+        sprintf(str_python_lib, "libpython%d.%d.so", PY_MAJOR_VERSION, PY_MINOR_VERSION);
+#elif defined __APPLE__
+        sprintf(str_python_lib, "libpython%d.%d.dylib", PY_MAJOR_VERSION, PY_MINOR_VERSION);
+#endif
+        dlopen(str_python_lib, RTLD_NOW | RTLD_GLOBAL);
+
         Py_Initialize();
         PySys_SetArgv(1, argv);
         /* Import 'lua' automatically. */
