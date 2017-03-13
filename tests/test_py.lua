@@ -29,3 +29,14 @@ assert(tostring(l + python.eval "['bye']") == "['hello', 'bye']")
 -- Test that Python C module can access Py Runtime symbols
 ctypes = python.import 'ctypes'
 assert(tostring(ctypes):match "module 'ctypes'")
+
+-- Test multiple Python statement execution
+pytype = python.eval "type"
+python.execute
+[[
+foo = 1
+bar = 2
+]]
+
+assert(python.globals().foo == 1)
+assert(python.globals().bar == 2)
