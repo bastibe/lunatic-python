@@ -433,7 +433,7 @@ static int py_run(lua_State *L, int eval)
 
     d = PyModule_GetDict(m);
 
-    o = PyRun_String(s, eval ? Py_eval_input : Py_single_input,
+    o = PyRun_String(s, eval ? Py_eval_input : Py_file_input,
                      d, d);
     if (!o)
     {
