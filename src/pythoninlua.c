@@ -329,7 +329,8 @@ static int py_object_index(lua_State *L)
         Py_DECREF(value);
     } else {
         PyErr_Clear();
-        // luaL_error(L, "unknown attribute in python object");
+        lua_pushnil(L);
+        ret = 1;
     }
 
     return ret;
