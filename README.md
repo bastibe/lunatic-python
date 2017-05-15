@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/greatwolf/lunatic-python.svg?branch=master)](https://travis-ci.org/greatwolf/lunatic-python)
+[![Build Status](https://travis-ci.org/bastibe/lunatic-python.svg?branch=master)](https://travis-ci.org/bastibe/lunatic-python)
 
 Details
 =======
