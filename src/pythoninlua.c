@@ -250,7 +250,7 @@ static int py_object_newindex(lua_State *L)
         return luaL_argerror(L, 1, "failed to convert value");
     }
 
-    if (PyObject_SetAttrString(obj->o, (char*)attr, value) == -1) {
+    if (PyObject_SetAttrString(obj->o, attr, value) == -1) {
         Py_DECREF(value);
         PyErr_Print();
         return luaL_error(L, "failed to set value");
@@ -323,7 +323,7 @@ static int py_object_index(lua_State *L)
     }
 
 
-    value = PyObject_GetAttrString(obj->o, (char*)attr);
+    value = PyObject_GetAttrString(obj->o, attr);
     if (value) {
         ret = py_convert(L, value);
         Py_DECREF(value);
