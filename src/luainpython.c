@@ -492,6 +492,7 @@ PyObject *Lua_run(PyObject *args, int eval)
         PyErr_Format(PyExc_RuntimeError,
                  "error loading code: %s",
                  lua_tostring(LuaState, -1));
+        free(buff);
         return NULL;
     }
 
