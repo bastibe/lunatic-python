@@ -498,14 +498,48 @@ PyObject *Lua_run(PyObject *args, int eval)
 
     free(buf);
     
-    if (lua_pcall(LuaState, 0, 1, 0) != 0) {
+    if (lua_pcall(LuaState, 0, LUA_MULTRET, 0) != 0) {
         PyErr_Format(PyExc_RuntimeError,
                  "error executing code: %s",
                  lua_tostring(LuaState, -1));
         return NULL;
     }
 
-    ret = LuaConvert(LuaState, -1);
+    int nargs, i;
+    nargs = lua_gettop(LuaState);
+    if (nargs == 1) {
+        ret = LuaConvert(LuaState, 1);
+        if (!ret) {
+            PyErr_SetString(PyExc_TypeError,
+                        "failed to convert return");
+            lua_settop(LuaState, 0);
+            Py_DECREF(ret);
+            return NULL;
+        }
+    } else if (nargs > 1) {
+        ret = PyTuple_New(nargs);
+        if (!ret) {
+            PyErr_SetString(PyExc_RuntimeError,
+                    "failed to create return tuple");
+            lua_settop(LuaState, 0);
+            return NULL;
+        }
+        for (i = 0; i != nargs; i++) {
+            PyObject* arg = LuaConvert(LuaState, i+1);
+            if (!arg) {
+                PyErr_Format(PyExc_TypeError,
+                         "failed to convert return #%d", i);
+                lua_settop(LuaState, 0);
+                Py_DECREF(ret);
+                return NULL;
+            }
+            PyTuple_SetItem(ret, i, arg);
+        }
+    } else {
+        Py_INCREF(Py_None);
+        ret = Py_None;
+    }
+    
     lua_settop(LuaState, 0);
     return ret;
 }
