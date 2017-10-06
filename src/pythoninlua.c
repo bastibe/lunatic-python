@@ -667,5 +667,8 @@ LUA_API int luaopen_python(lua_State *L)
 
     lua_setfield(L, -2, "none"); /* python.none */
 
+    /* Set 'python' global to newly loaded lib */
+    lua_setglobal(L, "python");
+
     return 1;
 }
