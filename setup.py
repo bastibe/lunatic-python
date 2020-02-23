@@ -18,8 +18,15 @@ from distutils.sysconfig import get_python_lib, get_python_version
 if os.path.isfile("MANIFEST"):
     os.unlink("MANIFEST")
 
+presult, poutput = commands.getstatusoutput("pkg-config --exists lua5.2")
+HAS_LUA5_2 = (presult == 0)
+
 # You may have to change these
-LUAVERSION = "5.2"
+if HAS_LUA5_2:
+    LUAVERSION = "5.2"
+else:
+    LUAVERSION = "5.1"
+
 PYTHONVERSION = get_python_version()
 PYLIBS = ["python" + get_python_version(), "pthread", "util"]
 PYLIBDIR = [get_python_lib(standard_lib=True) + "/config"]
