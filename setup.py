@@ -64,7 +64,7 @@ def pkgconfig(*packages):
 
     return kwargs
 
-lua_pkgconfig = pkgconfig('lua' + LUAVERSION, 'python-' + PYTHONVERSION)
+lua_pkgconfig = pkgconfig('lua' + LUAVERSION)
 lua_pkgconfig['extra_compile_args'] = ['-I/usr/include/lua'+LUAVERSION]
 
 setup(name="lunatic-python",
