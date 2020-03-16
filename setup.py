@@ -18,8 +18,15 @@ from distutils.sysconfig import get_python_lib, get_python_version
 if os.path.isfile("MANIFEST"):
     os.unlink("MANIFEST")
 
+presult, poutput = commands.getstatusoutput("pkg-config --exists lua5.2")
+HAS_LUA5_2 = (presult == 0)
+
 # You may have to change these
-LUAVERSION = "5.2"
+if HAS_LUA5_2:
+    LUAVERSION = "5.2"
+else:
+    LUAVERSION = "5.1"
+
 PYTHONVERSION = get_python_version()
 PYLIBS = ["python" + get_python_version(), "pthread", "util"]
 PYLIBDIR = [get_python_lib(standard_lib=True) + "/config"]
@@ -30,18 +37,19 @@ def pkgconfig(*packages):
     # map pkg-config output to kwargs for distutils.core.Extension
     flag_map = {'-I': 'include_dirs', '-L': 'library_dirs', '-l': 'libraries'}
 
+    combined_pcoutput = ''
     for package in packages:
         (pcstatus, pcoutput) = commands.getstatusoutput(
             "pkg-config --libs --cflags %s" % package)
         if pcstatus == 0:
-            break
-    else:
-        sys.exit("pkg-config failed for %s; "
-                 "most recent output was:\n%s" %
-                 (", ".join(packages), pcoutput))
+            combined_pcoutput += ' ' + pcoutput
+        else:
+            sys.exit("pkg-config failed for %s; "
+                     "most recent output was:\n%s" %
+                     (", ".join(packages), pcoutput))
 
     kwargs = {}
-    for token in pcoutput.split():
+    for token in combined_pcoutput.split():
         if token[:2] in flag_map:
             kwargs.setdefault(flag_map.get(token[:2]), []).append(token[2:])
         else:                           # throw others to extra_link_args
@@ -56,7 +64,7 @@ def pkgconfig(*packages):
 
     return kwargs
 
-lua_pkgconfig = pkgconfig('lua' + LUAVERSION, 'lua' + LUAVERSION,'python-' + PYTHONVERSION)
+lua_pkgconfig = pkgconfig('lua' + LUAVERSION, 'python-' + PYTHONVERSION)
 lua_pkgconfig['extra_compile_args'] = ['-I/usr/include/lua'+LUAVERSION]
 
 setup(name="lunatic-python",
