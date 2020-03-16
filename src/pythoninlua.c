@@ -115,6 +115,7 @@ static int py_object_call(lua_State *L)
     // passing a single table forces named keyword call style, e.g. plt.plot{x, y, c='red'}
     if (nargs==1 && lua_istable(L, 2)) {
         lua_pushnil(L);  /* first key */
+        nargs=0;
         while (lua_next(L, 2) != 0) {
             if (lua_isnumber(L, -2)) {
                 int i = lua_tointeger(L, -2);
@@ -271,6 +272,9 @@ static int _p_object_index_get(lua_State *L, py_object *obj, int keyn)
     }
 
     item = PyObject_GetItem(obj->o, key);
+    if (!item) {
+        item = PyObject_GetAttr(obj->o, key);
+    }
 
     Py_DECREF(key);
 
