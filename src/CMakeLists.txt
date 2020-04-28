@@ -9,6 +9,11 @@ if (WIN32)
   target_compile_definitions(src PRIVATE LUA_BUILD_AS_DLL)
 endif (WIN32)
 
+if (UNIX)
+  get_filename_component(PYTHON_LIBRT ${PYTHON_LIBRARIES} NAME)
+  target_compile_definitions(src PRIVATE PYTHON_LIBRT=${PYTHON_LIBRT})
+endif (UNIX)
+
 if (CMAKE_COMPILER_IS_GNUCC)
   target_compile_options(src PUBLIC -Wall -pedantic -std=c99)
 endif (CMAKE_COMPILER_IS_GNUCC)

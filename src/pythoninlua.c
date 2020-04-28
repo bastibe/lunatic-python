@@ -634,12 +634,12 @@ LUA_API int luaopen_python(lua_State *L)
         */
 #if defined(__linux__)
 #   define STR(s) #s
-#if PY_MAJOR_VERSION < 3
-#   define PYLIB_STR(major, minor) "libpython" STR(major) "." STR(minor) ".so"
-#else
-#   define PYLIB_STR(major, minor) "libpython" STR(major) "." STR(minor) "m.so"
+#   define PYLIB_STR(s) STR(s)
+#if !defined(PYTHON_LIBRT)
+#   error PYTHON_LIBRT must be defined when building under Linux!
 #endif
-        dlopen(PYLIB_STR(PY_MAJOR_VERSION, PY_MINOR_VERSION), RTLD_NOW | RTLD_GLOBAL);
+        void *ok = dlopen(PYLIB_STR(PYTHON_LIBRT), RTLD_NOW | RTLD_GLOBAL);
+        assert(ok); (void) ok;
 #endif
 
         Py_Initialize();
