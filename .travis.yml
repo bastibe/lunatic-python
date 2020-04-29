@@ -8,10 +8,13 @@ compiler:
 
 env:
   - LUA_ENV=lua5.1  PY_ENV=python2.7    m_SUFFIX=
+  - LUA_ENV=lua5.2  PY_ENV=python2.7    m_SUFFIX=
   - LUA_ENV=lua5.3  PY_ENV=python2.7    m_SUFFIX=
   - LUA_ENV=lua5.1  PY_ENV=python3.6    m_SUFFIX=m
+  - LUA_ENV=lua5.2  PY_ENV=python3.6    m_SUFFIX=m
   - LUA_ENV=lua5.3  PY_ENV=python3.6    m_SUFFIX=m
   - LUA_ENV=lua5.1  PY_ENV=python3.8    m_SUFFIX=
+  - LUA_ENV=lua5.2  PY_ENV=python3.8    m_SUFFIX=
   - LUA_ENV=lua5.3  PY_ENV=python3.8    m_SUFFIX=
 
 
