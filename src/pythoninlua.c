@@ -358,7 +358,7 @@ static int py_object_tostring(lua_State *L)
     if (!repr)
     {
         char buf[256];
-        snprintf(buf, 256, "python object: %p", obj->o);
+        snprintf(buf, 256, "python object: %p", (void *)obj->o);
         lua_pushstring(L, buf);
         PyErr_Clear();
     }
