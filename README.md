@@ -1,4 +1,7 @@
+# Lunatic-Python
+
 [![Build Status](https://travis-ci.org/bastibe/lunatic-python.svg?branch=master)](https://travis-ci.org/bastibe/lunatic-python)
+[![License: LGP-L2.1](https://img.shields.io/badge/license-LGPL%202.1-blue.svg)](https://opensource.org/licenses/LGPL-2.1)
 
 Details
 =======
