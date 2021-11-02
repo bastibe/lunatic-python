@@ -17,7 +17,7 @@ Installing
 ----------
 
 To install, you will need to have the Python and Lua development libraries on your system. If you
-do, use the recommended methods (```pip```, ```easy-install```, etc) to install lunatic-python.
+do, use the recommended methods (`pip`, `easy-install`, etc) to install lunatic-python.
 
 This version has been modified to compile under Ubuntu. I haven't tested it under other
 distributions, your mileage may vary.
@@ -36,7 +36,8 @@ Examples
 Lua inside Python
 A basic example. 
 
-```>>> import lua
+```
+>>> import lua
 >>> lg = lua.globals()
 >>> lg.string
 <Lua table at 0x81c6a10>
@@ -48,7 +49,8 @@ A basic example.
 
 Now, let's put a local object into Lua space. 
 
-```>>> d = {}
+```
+>>> d = {}
 >>> lg.d = d
 >>> lua.execute("d['key'] = 'value'")
 >>> d
@@ -63,13 +65,15 @@ Good!
 
 Is the python interface available inside the Lua interpreter? 
 
-```>>> lua.eval("python")
+```
+>>> lua.eval("python")
 <Lua table at 0x81c7540>
 ```
 
 Yes, it looks so. Let's nest some evaluations and see a local reference passing through. 
 
-```>>> class MyClass: pass
+```
+>>> class MyClass: pass
 ... 
 >>> obj = MyClass()
 >>> obj
@@ -80,14 +84,16 @@ Yes, it looks so. Let's nest some evaluations and see a local reference passing 
 
 Are you still following me?  Good. Then you've probably noticed that the Python interpreter state inside the Lua interpreter state is the same as the outside Python we're running. Let's see that in a more comfortable way. 
 
-```>>> lua.execute("pg = python.globals()")
+```
+>>> lua.execute("pg = python.globals()")
 >>> lua.eval("pg.obj")
 <__main__.MyClass instance at 0x403ccb4c>
 ```
 
 Things get more interesting when we start to really mix Lua and Python code. 
 
-```>>> table = lua.eval("table")
+```
+>>> table = lua.eval("table")
 >>> def show(key, value):
 ...   print "key is %s and value is %s" % (`key`, `value`)
 ... 
@@ -101,7 +107,8 @@ key is 'b' and value is 2
 
 Of course, in this case the same could be achieved easily with Python. 
 
-```>>> def show(key, value):
+```
+>>> def show(key, value):
 ...   print "key is %s and value is %s" % (`key`, `value`)
 ... 
 >>> t = lua.eval("{a=1, b=2, c=3}")
@@ -118,7 +125,8 @@ Python inside Lua
 
 Now, let's have a look from another perspective. The basic idea is exactly the same. 
 
-```> require("python")
+```
+> require("python")
 > python.execute("import string")
 > pg = python.globals()
 > =pg.string
@@ -129,7 +137,8 @@ hello world!
 
 As Lua is mainly an embedding language, getting access to the batteries included in Python may be interesting. 
 
-```> re = python.import("re")
+```
+> re = python.import("re")
 > pattern = re.compile("^Hel(lo) world!")
 > match = pattern.match("Hello world!")
 > =match.group(1)
@@ -138,7 +147,8 @@ lo
 
 Just like in the Python example, let's put a local object in Python space. 
 
-```> d = {}
+```
+> d = {}
 > pg.d = d
 > python.execute("d['key'] = 'value'")
 > table.foreach(d, print)
@@ -147,20 +157,23 @@ key     value
 
 Again, let's grab back the reference from Python space. 
 
-```> d2 = python.eval("d")
+```
+> d2 = python.eval("d")
 > print(d == d2)
 true
 ```
 
 Is the Lua interface available to Python? 
 
-```> =python.eval("lua")
+```
+> =python.eval("lua")
 <module 'lua' (built-in)>
 ```
 
 Good. So let's do the nested trick in Lua as well. 
 
-```> t = {}
+```
+> t = {}
 > =t
 table: 0x80fbdb8
 > =python.eval("lua.eval('python.eval(\"lua.eval(\\'t\\')\")')")
@@ -170,14 +183,16 @@ table: 0x80fbdb8
 
 It means that the Lua interpreter state inside the Python interpreter is the same as the outside Lua interpreter state. Let's show that in a more obvious way. 
 
-```> python.execute("lg = lua.globals()")
+```
+> python.execute("lg = lua.globals()")
 > =python.eval("lg.t")
 table: 0x80fbdb8
 ```
 
 Now for the mixing example. 
 
-```> function notthree(num)
+```
+> function notthree(num)
 >>   return (num ~= 3)
 >> end
 > l = python.eval("[1, 2, 3, 4, 5]")
@@ -191,27 +206,30 @@ Documentation
 
 Theory
 ------
+
 The bridging mechanism consists of creating the missing interpreter state inside the host interpreter. That is, when you run the bridging system inside Python, a Lua interpreter is created; when you run the system inside Lua, a Python interpreter is created. 
 Once both interpreter states are available, these interpreters are provided with the necessary tools to interact freely with each other. The given tools offer not only the ability of executing statements inside the alien interpreter, but also to acquire individual objects and interact with them inside the native state. This magic is done by two special object types, which act bridging native object access to the alien interpreter state.
 
 Almost every object which is passed between Python and Lua is encapsulated in the language specific bridging object type. The only types which are not encapsulated are strings and numbers, which are converted to the native equivalent objects. 
-Besides that, the Lua side also has special treatment for encapsulated Python functions and methods. The most obvious way to implement calling of Python objects inside the Lua interpreter is to implement a ```__call``` function in the bridging object metatable. Unfortunately this mechanism is not supported in certain situations, since some places test if the object type is a function, which is not the case of the bridging object. To overwhelm these problems, Python functions and methods are automatically converted to native Lua function closures, becoming accessible in every Lua context. Callable object instances which are not functions nor methods, on the other hand, will still use the metatable mechanism. Luckily, they may also be converted in a native function closure using the ```asfunc()``` function, if necessary.
+Besides that, the Lua side also has special treatment for encapsulated Python functions and methods. The most obvious way to implement calling of Python objects inside the Lua interpreter is to implement a `__call` function in the bridging object metatable. Unfortunately this mechanism is not supported in certain situations, since some places test if the object type is a function, which is not the case of the bridging object. To overwhelm these problems, Python functions and methods are automatically converted to native Lua function closures, becoming accessible in every Lua context. Callable object instances which are not functions nor methods, on the other hand, will still use the metatable mechanism. Luckily, they may also be converted in a native function closure using the `asfunc()` function, if necessary.
 
 Attribute vs. Subscript object access
 -------------------------------------
 
 Accessing an attribute or using the subscript operator in Lua give access to the same information. This behavior is reflected in the Python special object that encapsulates Lua objects, allowing Lua tables to be accessed in a more comfortable way, and also giving access to objects which use protected Python keywords (such as the print function). For example: 
 
-```>>> string = lua.eval("string")
+```
+>>> string = lua.eval("string")
 >>> string.lower
 <Lua function at 0x81c6bf8>
 >>> string["lower"]
 <Lua function at 0x81c6bf8>
 ```
 
-Using Python from the Lua side requires a little bit more attention, since Python has a more strict syntax than Lua. The later makes no distinction between attribute and subscript access, so we need some way to know what kind of access is desired at a given moment. This control is provided using two functions: ```asindx()``` and ```asattr()```. These functions receive a single Python object as parameter, and return the same object with the given access discipline. Notice that dictionaries and lists use the index discipline by default, while other objects use the attribute discipline. For example: 
+Using Python from the Lua side requires a little bit more attention, since Python has a more strict syntax than Lua. The later makes no distinction between attribute and subscript access, so we need some way to know what kind of access is desired at a given moment. This control is provided using two functions: `asindx()` and `asattr()`. These functions receive a single Python object as parameter, and return the same object with the given access discipline. Notice that dictionaries and lists use the index discipline by default, while other objects use the attribute discipline. For example: 
 
-```> dict = python.eval("{}")
+```
+> dict = python.eval("{}")
 > =dict.keys
 nil
 > dict.keys = 10
@@ -238,14 +256,16 @@ Below is a description of the functions available in the lua module.
 This function will execute the given statement inside the Lua interpreter state. 
 Examples: 
 
-```>>> lua.execute("foo = 'bar'")
+```
+>>> lua.execute("foo = 'bar'")
 lua.eval(expression)
 ```
 
 This function will evaluate the given expression inside the Lua interpreter state, and return the result. It may be used to acquire any object from the Lua interpreter state. 
 Examples:
 
-```>>> lua.eval("'foo'..2")
+```
+>>> lua.eval("'foo'..2")
 'foo2'
 >>> lua.eval('string')
 <Lua table at 0x81c6ae8>
@@ -260,7 +280,8 @@ Return the Lua global scope from the interpreter state.
 
 Examples: 
 
-```>>> lg = lua.globals()
+```
+>>> lg = lua.globals()
 >>> lg.string.lower("Hello world!")
 'hello world!'
 >>> lg["string"].lower("Hello world!")
@@ -276,7 +297,8 @@ Hello world!
 Executes the require() Lua function, importing the given module. 
 
 Examples: 
-```>>> lua.require("testmod")
+```
+>>> lua.require("testmod")
 True
 >>> lua.execute("func()")
 I'm func in testmod!
@@ -289,12 +311,14 @@ Unlike Python, Lua has no default path to its modules. Thus, the default path of
 
 Unfortunately, there's a minor inconvenience for our purposes regarding the Lua system which imports external shared objects. The hardcoded behavior of the loadlib() function is to load shared objects without exporting their symbols. This is usually not a problem in the Lua world, but we're going a little beyond their usual requirements here. We're loading the Python interpreter as a shared object, and the Python interpreter may load its own external modules which are compiled as shared objects as well, and these will want to link back to the symbols in the Python interpreter. Luckily, fixing this problem is easier than explaining the problem. It's just a matter of replacing the flag RTLD_NOW in the loadlib.c file of the Lua distribution by the or'ed version RTLD_NOW|RTLD_GLOBAL. This will avoid "undefined symbol" errors which could eventually happen. 
 Below is a description of the functions available in the python module. 
-python.execute(statement)
+
+`python.execute(statement)`
 
 This function will execute the given statement inside the Python interpreter state. 
 Examples: 
 
-```> python.execute("foo = 'bar'")
+```
+> python.execute("foo = 'bar'")
 ```
 
 `python.eval(expression)`
@@ -303,7 +327,8 @@ This function will evaluate the given expression inside the Python interpreter s
 
 Examples: 
 
-```> python.execute("import string")
+```
+> python.execute("import string")
 > =python.eval("string")
 <module 'string' from '/usr/lib/python2.3/string.pyc'>
 > string = python.eval("string")
@@ -316,7 +341,8 @@ hello world!
 Return the Python global scope dictionary from the interpreter state. 
 Examples: 
 
-```> python.execute("import string")
+```
+> python.execute("import string")
 > pg = python.globals()
 > =pg.string.lower("Hello world!")
 hello world!
@@ -329,7 +355,8 @@ hello world!
 Return the Python local scope dictionary from the interpreter state. 
 Examples: 
 
-```> function luafunc()
+```
+> function luafunc()
 >>   print(python.globals().var)
 >>   print(python.locals().var)
 >> end
@@ -344,7 +371,8 @@ value
 Return the Python builtins module dictionary from the interpreter state. 
 Examples: 
 
-```> pb = python.builtins()
+```
+> pb = python.builtins()
 > =pb.len("Hello world!")
 12
 ```
@@ -354,7 +382,8 @@ Examples:
 Imports and returns the given Python module. 
 Examples: 
 
-```> os = python.import("os")
+```
+> os = python.import("os")
 > =os.getcwd()
 /home/niemeyer/src/lunatic-python
 ```
@@ -364,7 +393,8 @@ Examples:
 Return a copy of the given Python object with an attribute access discipline. 
 Examples: 
 
-```> dict = python.eval("{}")
+```
+> dict = python.eval("{}")
 > =dict.keys
 nil
 > dict.keys = 10
@@ -385,7 +415,8 @@ function: 0x80fa9b8
 Return a copy of the given Python object with an index access discipline. 
 Examples: 
 
-```> buffer = python.eval("buffer('foobar')")
+```
+> buffer = python.eval("buffer('foobar')")
 > =buffer[0]
 stdin:1: unknown attribute in python object
 stack traceback:
@@ -402,7 +433,8 @@ f
 Return a copy of the given Python object enclosed in a Lua function closure. This is useful to use Python callable instances in places that require a Lua function. Python methods and functions are automatically converted to Lua functions, and don't require to be explicitly converted. 
 Examples: 
 
-```> python.execute("class Join:\n def __call__(self, *args):\n  return '-'.join(args)")
+```
+> python.execute("class Join:\n def __call__(self, *args):\n  return '-'.join(args)")
 > join = python.eval("Join()")
 > =join
 <__main__.Join instance at 0x403a864c>
