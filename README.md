@@ -13,14 +13,33 @@ Sadly, Lunatic Python is very much outdated and won't work with either a current
 This is an updated version of lunatic-python that works with Python 2.7-3.x and Lua 5.1-5.3.
 I tried contacting the original author of Lunatic Python, but got no response.
 
+Commonly-made mistakes
+----------
+lunatic-python on pypi is the old package, not this fork.
+
+Do not run make at top level. The Makefile does not work anymore.
+
+Do not run python setup.py at top level. The setup.py file does not work anymore since the PYTHON_LIBRT update.
+
+Build
+----------
+```
+cmake --B build -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR} -DPYTHON_LIBRARIES=${PYTHON_LIBRARIES} -DLUA_LIBRARIES={LUA_LIBRARIES} -DLUA_INCLUDE_DIR={LUA_INCLUDE_DIR}
+cmake --build build
+```
+if youu are using openresty's luajit, specify luajit's library.
+
 Installing
 ----------
+copy build/bin/python.so to lus's libraries(like /usr/local/openresty/luajit/lib/python.so).
 
-To install, you will need to have the Python and Lua development libraries on your system. If you
-do, use the recommended methods (`pip`, `easy-install`, etc) to install lunatic-python.
+copy build/bin/lua.so to python's libraries.
 
-This version has been modified to compile under Ubuntu. I haven't tested it under other
-distributions, your mileage may vary.
+set enviroment variable:
+```
+PYTHONHOME=${PYTHONHOME}
+PYTHONPATH=${PYTHONPATH}
+```
 
 Introduction
 ------------
