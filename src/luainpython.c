@@ -301,11 +301,19 @@ static PyObject *LuaObject_str(PyObject *obj)
     return ret;
 }
 
+#ifndef LUA_OK
+#define LUA_OK 0
+#endif
+#ifndef LUA_OPEQ
+#define LUA_OPEQ 1
+#endif
+#ifndef LUA_OPLT
+#define LUA_OPLT 2
+#endif
+#ifndef LUA_OPLE
+#define LUA_OPLE 3
+#endif
 #if LUA_VERSION_NUM == 501
-enum
-{
-  LUA_OK, LUA_OPEQ, LUA_OPLT, LUA_OPLE,
-};
 static int lua_compare(lua_State *L, int lhs, int rhs, int op)
 {
   switch(op)
