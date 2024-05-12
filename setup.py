@@ -25,7 +25,7 @@ HAS_LUA5_2 = (presult == 0)
 if HAS_LUA5_2:
     LUAVERSION = "5.2"
 else:
-    LUAVERSION = "5.1"
+    LUAVERSION = "5.4"
 
 PYTHONVERSION = get_python_version()
 PYLIBS = ["python" + get_python_version(), "pthread", "util"]

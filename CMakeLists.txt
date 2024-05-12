@@ -7,7 +7,7 @@ set(LIBRARY_OUTPUT_PATH ${EXECUTABLE_OUTPUT_PATH})
 
 project(Lunatic)
 
-find_package(Lua        5.1 REQUIRED)
+find_package(Lua        5.4 REQUIRED)
 find_package(PythonLibs 2.7 REQUIRED)
 
 
