@@ -20,6 +20,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 */
+
 #include <Python.h>
 #if defined(__linux__)
 #   include <dlfcn.h>
@@ -183,8 +184,23 @@ static int py_object_call(lua_State *L)
         ret = py_convert(L, value);
         Py_DECREF(value);
     } else {
-        PyErr_Print();
-        luaL_error(L, "error calling python function");
+        char s_err[1024];
+        memset(s_err, 0, 1024);
+
+        PyObject *exc_type, *exc_value, *exc_traceback;
+        PyErr_Fetch(&exc_type, &exc_value, &exc_traceback);
+        PyObject *exc_str = PyObject_Str(exc_value);
+
+        // Need not be garbage collected as per documentation of PyUnicode_AsUTF8
+        const char *exc_cstr = PyUnicode_AsUTF8(exc_str);
+
+        strncpy(s_err, (!(exc_cstr)?"UNKNOWN ERROR":exc_cstr), 1023);
+        Py_XDECREF(exc_type);
+        Py_XDECREF(exc_value);
+        Py_XDECREF(exc_traceback);
+        Py_XDECREF(exc_str);
+
+        luaL_error(L, "error calling python function [%s]", s_err);
     }
 
     return ret;
