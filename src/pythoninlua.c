@@ -184,10 +184,8 @@ static int py_object_call(lua_State *L)
         ret = py_convert(L, value);
         Py_DECREF(value);
     } else {
-        char s_exc[1024];
-        char s_traceback[1280];
-        memset(s_exc, 0, 1024);
-        memset(s_traceback, 0, 1280);
+        char s_exc[1024] = {0};
+        char s_traceback[1280] = {0};
 
         PyObject *exc_type, *exc_value, *exc_traceback;
         PyErr_Fetch(&exc_type, &exc_value, &exc_traceback);
