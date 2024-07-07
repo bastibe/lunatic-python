@@ -111,7 +111,12 @@ static PyObject *LuaCall(lua_State *L, PyObject *args)
 {
     PyObject *ret = NULL;
     PyObject *arg;
-    int nargs, rc, i;
+#ifdef PY_SSIZE_T_CLEAN
+    Py_ssize_t nargs, i;
+#else
+    int nargs, i;
+#endif
+    int rc;
 
     if (!PyTuple_Check(args)) {
         PyErr_SetString(PyExc_TypeError, "tuple expected");
@@ -359,7 +364,8 @@ static PyObject* LuaObject_richcmp(PyObject *lhs, PyObject *rhs, int op)
     PyErr_SetString(PyExc_RuntimeError, lua_tostring(LuaState, -1));
     return NULL;
   }
-  return lua_toboolean(LuaState, -1) ? Py_True : Py_False;
+  //return lua_toboolean(LuaState, -1) ? Py_True : Py_False;
+  return LuaConvert(LuaState, -1);
 }
 
 static PyObject *LuaObject_call(PyObject *obj, PyObject *args)
@@ -455,6 +461,7 @@ PyTypeObject LuaObject_Type = {
     .tp_new = PyType_GenericNew,
     .tp_free = PyObject_Del,
 };
+
 /*
 PyTypeObject LuaObject_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
@@ -462,7 +469,7 @@ PyTypeObject LuaObject_Type = {
     sizeof(LuaObject),        //tp_basicsize
     0,                        //tp_itemsize
     (destructor)LuaObject_dealloc, //tp_dealloc
-    0,                        //tp_print
+    0,                        //tp_vectorcall_offset
     0,                        //tp_getattr
     0,                        //tp_setattr
     0,                        //tp_compare
@@ -497,6 +504,16 @@ PyTypeObject LuaObject_Type = {
     PyType_GenericNew,        //tp_new
     PyObject_Del,            //tp_free
     0,                        //tp_is_gc
+    0,  // tp_bases
+    0, // tp_mro
+    0, // tp_cache
+    0, // tp_subclasses
+    0, //tp_weaklist   
+    0, //tp_del
+    0, //tp_version_tag
+    0, //tp_finalize
+    0, //tp_vectorcall
+    0, //tp_watched
 };
 */
 
