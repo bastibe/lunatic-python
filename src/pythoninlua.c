@@ -219,8 +219,7 @@ static int py_object_call(lua_State *L)
         }
 
         if (*s_traceback == '\0') {
-            strcpy(s_traceback, "Exception: ");
-            strncat(s_traceback, s_exc, (1280 - strlen("Exception: ")));
+            snprintf(s_traceback, 1280, "Exception: %s", s_exc);
         }
 
 
