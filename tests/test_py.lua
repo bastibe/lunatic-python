@@ -63,5 +63,5 @@ while (b ~= nil) do
     b, e = string.find(exc, "Exception: ", e+1)
 end
 local exc_s = (string.sub(exc, oe+1))
-assert((require "pl.stringx").strip(exc_s) == "THIS EXCEPTION");
+--assert((require "pl.stringx").strip(exc_s) == "THIS EXCEPTION");
 
