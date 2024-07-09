@@ -185,7 +185,7 @@ static int py_object_call(lua_State *L)
         Py_DECREF(value);
     } else {
         char s_exc[1024] = {0};
-        char s_traceback[1280] = {0};
+        char s_traceback[1024] = {0};
 
         PyObject *exc_type, *exc_value, *exc_traceback;
         PyErr_Fetch(&exc_type, &exc_value, &exc_traceback);
@@ -195,7 +195,7 @@ static int py_object_call(lua_State *L)
 
         // Need not be garbage collected as per documentation of PyUnicode_AsUTF8
         const char *exc_cstr = (exc_str)?PyUnicode_AsUTF8(exc_str):"";
-        strncpy(s_exc, (!(exc_cstr)?"UNKNOWN ERROR":exc_cstr), 1023);
+        strncpy(s_exc, (!(exc_cstr)?"UNKNOWN ERROR\n":exc_cstr), 1023);
 
         if (exc_value != NULL && exc_traceback != NULL) {
             PyObject *traceback_module = PyImport_ImportModule("traceback");
@@ -217,18 +217,18 @@ static int py_object_call(lua_State *L)
                 Py_XDECREF(traceback_module);
             }
         }
-
-        if (*s_traceback == '\0') {
-            snprintf(s_traceback, 1280, "Exception: %s", s_exc);
-        }
-
-
         Py_XDECREF(exc_type);
         Py_XDECREF(exc_value);
         Py_XDECREF(exc_traceback);
         Py_XDECREF(exc_str);
 
-        luaL_error(L, "error calling python function:\n%s", s_traceback);
+        if (*s_traceback == '\0') {
+            luaL_error(L, "error calling python function:\nException: %s", s_exc);
+        }
+        else {
+            luaL_error(L, "error calling python function:\nException: %s", s_traceback);
+        }
+
     }
 
     return ret;

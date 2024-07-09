@@ -40,3 +40,28 @@ bar = 2
 
 assert(python.globals().foo == 1)
 assert(python.globals().bar == 2)
+
+python.execute
+[[
+def throw_exc():
+    raise Exception("THIS EXCEPTION")
+]]
+
+local status, exc = pcall(python.globals().throw_exc)
+assert(status == false)
+assert(exc ==
+[[error calling python function:
+Exception: Traceback (most recent call last):
+  File "<string>", line 2, in throw_exc
+Exception: THIS EXCEPTION
+]], exc)
+
+local b, e = string.find(exc, "Exception: ", 1);
+local ob, oe = b, e;
+while (b ~= nil) do
+    ob, oe = b, e
+    b, e = string.find(exc, "Exception: ", e+1)
+end
+local exc_s = (string.sub(exc, oe+1))
+assert((require "pl.stringx").strip(exc_s) == "THIS EXCEPTION");
+
