@@ -20,6 +20,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 */
+
 #include <Python.h>
 #if defined(__linux__)
 #   include <dlfcn.h>
@@ -183,8 +184,51 @@ static int py_object_call(lua_State *L)
         ret = py_convert(L, value);
         Py_DECREF(value);
     } else {
-        PyErr_Print();
-        luaL_error(L, "error calling python function");
+        char s_exc[1024] = {0};
+        char s_traceback[1024] = {0};
+
+        PyObject *exc_type, *exc_value, *exc_traceback;
+        PyErr_Fetch(&exc_type, &exc_value, &exc_traceback);
+        PyErr_NormalizeException(&exc_type, &exc_value, &exc_traceback);
+
+        PyObject *exc_str = PyObject_Str(exc_value);
+
+        // Need not be garbage collected as per documentation of PyUnicode_AsUTF8
+        const char *exc_cstr = (exc_str)?PyUnicode_AsUTF8(exc_str):"";
+        strncpy(s_exc, (!(exc_cstr)?"UNKNOWN ERROR\n":exc_cstr), 1023);
+
+        if (exc_value != NULL && exc_traceback != NULL) {
+            PyObject *traceback_module = PyImport_ImportModule("traceback");
+            if (traceback_module != NULL) {
+                PyObject *traceback_list = PyObject_CallMethod(traceback_module,
+                        "format_exception", "OOO", exc_type, exc_value, exc_traceback);
+                if (traceback_list != NULL) {
+                    PyObject *traceback_str = PyUnicode_Join(PyUnicode_FromString(""), traceback_list);
+                    if (traceback_str != NULL) {
+                        // Need not be garbage collected as per documentation of PyUnicode_AsUTF8
+                        const char *traceback_cstr = PyUnicode_AsUTF8(traceback_str);
+                        if (traceback_cstr != NULL) {
+                            strncpy(s_traceback, traceback_cstr, 1023);
+                        }
+                        Py_XDECREF(traceback_str);
+                    }
+                    Py_XDECREF(traceback_list);
+                }
+                Py_XDECREF(traceback_module);
+            }
+        }
+        Py_XDECREF(exc_type);
+        Py_XDECREF(exc_value);
+        Py_XDECREF(exc_traceback);
+        Py_XDECREF(exc_str);
+
+        if (*s_traceback == '\0') {
+            luaL_error(L, "error calling python function:\nException: %s", s_exc);
+        }
+        else {
+            luaL_error(L, "error calling python function:\nException: %s", s_traceback);
+        }
+
     }
 
     return ret;

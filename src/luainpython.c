@@ -20,6 +20,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 */
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 /* need this to build with Lua 5.2: enables lua_strlen() macro */
@@ -110,7 +111,12 @@ static PyObject *LuaCall(lua_State *L, PyObject *args)
 {
     PyObject *ret = NULL;
     PyObject *arg;
-    int nargs, rc, i;
+#ifdef PY_SSIZE_T_CLEAN
+    Py_ssize_t nargs, i;
+#else
+    int nargs, i;
+#endif
+    int rc;
 
     if (!PyTuple_Check(args)) {
         PyErr_SetString(PyExc_TypeError, "tuple expected");
@@ -358,7 +364,7 @@ static PyObject* LuaObject_richcmp(PyObject *lhs, PyObject *rhs, int op)
     PyErr_SetString(PyExc_RuntimeError, lua_tostring(LuaState, -1));
     return NULL;
   }
-  return lua_toboolean(LuaState, -1) ? Py_True : Py_False;
+  return LuaConvert(LuaState, -1);
 }
 
 static PyObject *LuaObject_call(PyObject *obj, PyObject *args)
@@ -396,9 +402,17 @@ static PyObject *LuaObject_iternext(LuaObject *obj)
     return ret;
 }
 
+#ifdef PY_SSIZE_T_CLEAN
+static Py_ssize_t LuaObject_length(LuaObject *obj)
+#else
 static int LuaObject_length(LuaObject *obj)
+#endif
 {
+#ifdef PY_SSIZE_T_CLEAN
+    Py_ssize_t len;
+#else
     int len;
+#endif
     lua_rawgeti(LuaState, LUA_REGISTRYINDEX, ((LuaObject*)obj)->ref);
     len = luaL_len(LuaState, -1);
     lua_settop(LuaState, 0);
@@ -428,54 +442,35 @@ static PyMappingMethods LuaObject_as_mapping = {
 
 PyTypeObject LuaObject_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "lua.custom",             /*tp_name*/
-    sizeof(LuaObject),        /*tp_basicsize*/
-    0,                        /*tp_itemsize*/
-    (destructor)LuaObject_dealloc, /*tp_dealloc*/
-    0,                        /*tp_print*/
-    0,                        /*tp_getattr*/
-    0,                        /*tp_setattr*/
-    0,                        /*tp_compare*/
-    LuaObject_str,            /*tp_repr*/
-    0,                        /*tp_as_number*/
-    0,                        /*tp_as_sequence*/
-    &LuaObject_as_mapping,    /*tp_as_mapping*/
-    0,                        /*tp_hash*/
-    (ternaryfunc)LuaObject_call,     /*tp_call*/
-    LuaObject_str,            /*tp_str*/
-    LuaObject_getattr,       /*tp_getattro*/
-    LuaObject_setattr,        /*tp_setattro*/
-    0,                        /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "custom lua object",      /*tp_doc*/
-    0,                        /*tp_traverse*/
-    0,                        /*tp_clear*/
-    LuaObject_richcmp,        /*tp_richcompare*/
-    0,                        /*tp_weaklistoffset*/
-    PyObject_SelfIter,        /*tp_iter*/
-    (iternextfunc)LuaObject_iternext, /*tp_iternext*/
-    0,                        /*tp_methods*/
-    0,                        /*tp_members*/
-    0,                        /*tp_getset*/
-    0,                        /*tp_base*/
-    0,                        /*tp_dict*/
-    0,                        /*tp_descr_get*/
-    0,                        /*tp_descr_set*/
-    0,                        /*tp_dictoffset*/
-    0,                        /*tp_init*/
-    PyType_GenericAlloc,      /*tp_alloc*/
-    PyType_GenericNew,        /*tp_new*/
-    PyObject_Del,            /*tp_free*/
-    0,                        /*tp_is_gc*/
+    .tp_name = "lua.custom",
+    .tp_basicsize = sizeof(LuaObject),
+    .tp_dealloc = (destructor)LuaObject_dealloc,
+    .tp_repr = LuaObject_str,
+    .tp_as_mapping = &LuaObject_as_mapping,
+    .tp_call = (ternaryfunc)LuaObject_call,
+    .tp_str = LuaObject_str,
+    .tp_getattro = LuaObject_getattr,
+    .tp_setattro = LuaObject_setattr,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = "custom lua object",
+    .tp_richcompare = LuaObject_richcmp,
+    .tp_iter = PyObject_SelfIter,
+    .tp_iternext = (iternextfunc)LuaObject_iternext,
+    .tp_alloc = PyType_GenericAlloc,
+    .tp_new = PyType_GenericNew,
+    .tp_free = PyObject_Del,
 };
-
 
 PyObject *Lua_run(PyObject *args, int eval)
 {
     PyObject *ret;
     char *buf = NULL;
     char *s;
+#ifdef PY_SSIZE_T_CLEAN
+    Py_ssize_t len;
+#else
     int len;
+#endif
 
     if (!PyArg_ParseTuple(args, "s#", &s, &len))
         return NULL;
