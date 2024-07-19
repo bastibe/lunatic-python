@@ -1,8 +1,8 @@
 add_library(src OBJECT luainpython.c pythoninlua.c)
-set_target_properties(src PROPERTIES 
+set_target_properties(src PROPERTIES
                           POSITION_INDEPENDENT_CODE TRUE)
 
-target_include_directories(src PRIVATE ${LUA_INCLUDE_DIR} ${PYTHON_INCLUDE_DIR})
+target_include_directories(src PRIVATE ${LUA_INCLUDE_DIR} ${Python_INCLUDE_DIRS})
 
 target_compile_definitions(src PRIVATE LUA_LIB)
 if (WIN32)
@@ -10,7 +10,7 @@ if (WIN32)
 endif (WIN32)
 
 if (UNIX)
-  get_filename_component(PYTHON_LIBRT ${PYTHON_LIBRARIES} NAME)
+  get_filename_component(PYTHON_LIBRT ${Python_LIBRARIES} NAME)
   target_compile_definitions(src PRIVATE PYTHON_LIBRT=${PYTHON_LIBRT})
 endif (UNIX)
 
