@@ -308,6 +308,9 @@ static PyObject *LuaObject_str(PyObject *obj)
 }
 
 #if LUA_VERSION_NUM == 501
+#ifdef LUA_OK // defined in LuaJIT
+#undef LUA_OK
+#endif
 enum
 {
   LUA_OK, LUA_OPEQ, LUA_OPLT, LUA_OPLE,
