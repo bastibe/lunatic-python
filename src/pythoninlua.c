@@ -184,8 +184,8 @@ static int py_object_call(lua_State *L)
         ret = py_convert(L, value);
         Py_DECREF(value);
     } else {
-        char s_exc[1024] = {0};
-        char s_traceback[1024] = {0};
+        char s_exc[4096] = {0};
+        char s_traceback[sizeof(s_exc)] = {0};
 
         PyObject *exc_type, *exc_value, *exc_traceback;
         PyErr_Fetch(&exc_type, &exc_value, &exc_traceback);
@@ -195,7 +195,7 @@ static int py_object_call(lua_State *L)
 
         // Need not be garbage collected as per documentation of PyUnicode_AsUTF8
         const char *exc_cstr = (exc_str)?PyUnicode_AsUTF8(exc_str):"";
-        strncpy(s_exc, (!(exc_cstr)?"UNKNOWN ERROR\n":exc_cstr), 1023);
+        strncpy(s_exc, (!(exc_cstr)?"UNKNOWN ERROR\n":exc_cstr), sizeof(s_exc)-1);
 
         if (exc_value != NULL && exc_traceback != NULL) {
             PyObject *traceback_module = PyImport_ImportModule("traceback");
@@ -208,7 +208,7 @@ static int py_object_call(lua_State *L)
                         // Need not be garbage collected as per documentation of PyUnicode_AsUTF8
                         const char *traceback_cstr = PyUnicode_AsUTF8(traceback_str);
                         if (traceback_cstr != NULL) {
-                            strncpy(s_traceback, traceback_cstr, 1023);
+                            strncpy(s_traceback, traceback_cstr, sizeof(s_exc)-1);
                         }
                         Py_XDECREF(traceback_str);
                     }
@@ -665,12 +665,25 @@ LUA_API int luaopen_python(lua_State *L)
     if (!Py_IsInitialized())
     {
         PyObject *luam, *mainm, *maind;
-#if PY_MAJOR_VERSION >= 3
-        wchar_t *argv[] = {L"<lua>", 0};
+#if PY_MAJOR_VERSION > 3 || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION >= 11)
+        // Python 3.11+ syntax
+        char *argv[] = {"python3", 0};
+
+        PyConfig config;
+        PyConfig_InitPythonConfig(&config);
+        config.isolated = 1;
+
+        PyConfig_SetBytesArgv(&config, 1, argv);
 #else
-        char *argv[] = {"<lua>", 0};
+#if PY_MAJOR_VERSION >= 3
+        // Python < 3.11 syntax
+        wchar_t *argv[] = {L"python3", 0};
+#else
+        // Python 2 syntax
+        char *argv[] = {"python2", 0};
 #endif
         Py_SetProgramName(argv[0]);
+#endif
         PyImport_AppendInittab("lua", PyInit_lua);
 
         /* Loading python library symbols so that dynamic extensions don't throw symbol not found error.           
@@ -686,8 +699,16 @@ LUA_API int luaopen_python(lua_State *L)
         assert(ok); (void) ok;
 #endif
 
+#if PY_MAJOR_VERSION > 3 || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION >= 11)
+        // Python 3.11+ syntax
+        Py_InitializeFromConfig(&config);
+        PyConfig_Clear(&config);
+#else
+        // Python 2, < 3.11 syntax
         Py_Initialize();
         PySys_SetArgv(1, argv);
+#endif
+
         /* Import 'lua' automatically. */
         luam = PyImport_ImportModule("lua");
         if (!luam)
