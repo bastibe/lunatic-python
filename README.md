@@ -10,14 +10,29 @@ This is a fork of Lunatic Python, which can be found on the 'net at http://labix
 
 Sadly, Lunatic Python is very much outdated and won't work with either a current Python or Lua.
 
-This is an updated version of lunatic-python that works with Python 2.7-3.x and Lua 5.1-5.3.
+This is an updated version of lunatic-python that works with Python 2.7-3.x and Lua 5.1-5.5.
 I tried contacting the original author of Lunatic Python, but got no response.
 
 Installing
 ----------
 
-To install, you will need to have the Python and Lua development libraries on your system. If you
-do, use the recommended methods (`pip`, `easy-install`, etc) to install lunatic-python.
+> To install, you will need to have the Python and Lua development libraries on your system.
+
+Lunatic Python is available via the [Luarocks](https://luarocks.org/modules/leso-kn/lunatic-python) package manager.
+For using the Python variant (Lua in Python) you can install this repository as described below.
+
+Use one of the recommended methods (`luarocks`, `pip`, `easy-install`, etc) to install lunatic-python:
+
+```bash
+# For Python in Lua (Luarocks)
+> luarocks install lunatic-python
+
+# For Lua in Python (Option 1: pip)
+> pip install git+https://github.com/bastibe/lunatic-python
+
+# For Lua in Python (Option 2: easy-install)
+> easy_install git+https://github.com/bastibe/lunatic-python
+```
 
 This version has been modified to compile under Ubuntu. I haven't tested it under other
 distributions, your mileage may vary.
