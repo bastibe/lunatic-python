@@ -46,6 +46,8 @@ jobs:
           print(f"{type(lg) = }")
           print(f"{type(lg.string) = }")
           print(f"{type(lg.string.lower) = }")
-          print(f"{lg.string.lower('Hello world!') = }")          
+          print(f"{lg.string.lower('Hello world!') = }")
+      - run: python tests/test_lua.py
       - run: pip install pytest
       - run: pytest || true  # TODO: Write some pytests
+      - run: pytest --doctest-modules || true  # TODO: Write some pytests
