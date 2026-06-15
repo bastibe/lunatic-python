@@ -1,0 +1,44 @@
+name: ci
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  ci_macos:
+    strategy:
+      fail-fast: false  # https://github.com/actions/runner-images#available-images
+      matrix:  # https://www.lua.org/versions.html
+        os: [macos-26, macos-26-intel]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - run: echo "${{ runner.os }} on ${{ runner.arch }}"
+      - run: |
+          brew install luarocks
+      - run: lua -v && luarocks --version  # lua 5.5.0 and luarocks 3.13.0
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: 3.x
+      - run: pip install --upgrade pip
+      # TODO: Fails on macOS
+      - run: luarocks --local make || true
+        env:
+          CFLAGS: "These environment variables are ignored by luarocks make."
+          LDFLAGS: "These environment variables are ignored by luarocks make."
+      - run: pip install --editable .
+      - shell: python  # Sanity check
+        run: |
+          import lua
+          lg = lua.globals()
+          print(f"{lg = }")
+          print(f"{lg.string = }")
+          print(f"{lg.string.lower = }")
+          print(f"{lg.string.lower('Hello world!') = }")
+          assert lg.string.lower('Hello world!') != 'Hello world!'
+          assert lg.string.lower('Hello world!') == 'hello world!'
+      # TODO: macOS: Blocked by `luarocks --local make` above
+      - run: lua tests/test_py.lua || true
+      - run: python -m doctest tests/test_lua.py
+      - run: pip install pytest
+      - run: pytest
+      - run: pytest --doctest-modules

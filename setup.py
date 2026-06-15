@@ -1,12 +1,9 @@
 #!/usr/bin/python
 
-import sys
 import os
+import sys
 
-if sys.version > '3':
-    PY3 = True
-else:
-    PY3 = False
+PY3 = sys.version_info >= (3, 0)
 
 if PY3:
     import subprocess as commands
@@ -68,7 +65,10 @@ def pkgconfig(*packages):
 
     return kwargs
 
-lua_pkgconfig = pkgconfig('lua' + LUAVERSION, 'python-' + PYTHONVERSION)
+if sys.platform == "darwin":  # macOS
+    lua_pkgconfig = pkgconfig('lua' + LUAVERSION)
+else:
+    lua_pkgconfig = pkgconfig('lua' + LUAVERSION, 'python-' + PYTHONVERSION)
 lua_pkgconfig['extra_compile_args'] = ['-I/usr/include/lua'+LUAVERSION, '-DPYTHON_LIBRT="' + str(PYTHON_LIBRT) + '"']
 
 setup(name="lunatic-python",
