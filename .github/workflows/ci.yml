@@ -16,8 +16,7 @@ jobs:
       - uses: leafo/gh-actions-lua@v13
         with:
           luaVersion: 5.1.5  # https://www.lua.org/versions.html
-      - run: lua -v || true
-      - run: lua -h || true
+      - run: lua -h && lua -v
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
@@ -26,7 +25,8 @@ jobs:
       - run: pip install --upgrade pip
       - run: pip install --editable . || true  # TODO: Local install always fails!
       - run: luarocks install lunatic-python || true  # TODO: Always fails! luarocks: command not found
-      - run: pip install lunatic-python  # Install from PyPI
+      - run: pip install lunatic-python || true  # Install from PyPI -- Always fails!
+      - run: pip install lunatic-python-universal  # Install from PyPI
       - shell: python  # Sanity check
         run: |
           import lua
