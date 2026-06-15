@@ -16,6 +16,7 @@ jobs:
       - uses: leafo/gh-actions-lua@v13
         with:
           luaVersion: 5.1.5  # https://www.lua.org/versions.html
+      - uses: leafo/gh-actions-luarocks@v6
       - run: lua -h || lua -v
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
