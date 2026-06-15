@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: leafo/gh-actions-lua@v13
         with:
-          luaVersion: 5.2.x
+          luaVersion: 5.2.4  # https://www.lua.org/versions.html
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
