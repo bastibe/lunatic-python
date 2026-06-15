@@ -13,6 +13,7 @@ build = {
 	makefile = 'Makefile.luarocks',
 	variables = {
 		LIBDIR = '$(LIBDIR)',
-		LUA_INCDIR = '$(LUA_INCDIR)'
+		LUA_INCDIR = '$(LUA_INCDIR)',
+		LUA_LIBDIR = '$(LUA_LIBDIR)'
 	}
 }
