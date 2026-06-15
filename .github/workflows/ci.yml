@@ -1,0 +1,33 @@
+name: ci
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  pytest:
+    strategy:
+      fail-fast: false  # https://github.com/actions/runner-images#available-images
+      matrix:  # https://github.com/actions/python-versions/releases
+        os: [ubuntu-26.04, ubuntu-26.04-arm, macos-latest, macos-26-intel, windows-latest, windows-11-arm]
+        # python-version: ["3.10", "3.12", "3.14", "3.14t", "3.15", "pypy-3.11"]
+        python-version: [3.x]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: leafo/gh-actions-lua@v13
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+      - run: pip install --upgrade pip
+      - run: pip install pytest
+      - run: pip install --editable .
+      - shell: python  # Sanity check
+        run: |
+          import lua
+          lg = lua.globals()
+          print(f"{type(lg) = }")
+          print(f"{type(lg.string) = }")
+          print(f"{type(lg.string.lower) = }")
+          print(f"{lg.string.lower('Hello world!'') = }")          
+      - run: pytest
