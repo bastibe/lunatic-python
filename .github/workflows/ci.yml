@@ -14,6 +14,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: leafo/gh-actions-lua@v13
+        with:
+          luaVersion: 5.2.x
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
@@ -21,8 +23,8 @@ jobs:
           allow-prereleases: true
       - run: pip install --upgrade pip
       - run: pip install pytest
-      # - run: pip install --editable .
-      - run: luarocks install lunatic-python
+      - run: pip install --editable .
+      # - run: luarocks install lunatic-python
       - shell: python  # Sanity check
         run: |
           import lua
