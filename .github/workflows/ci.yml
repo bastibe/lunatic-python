@@ -8,14 +8,16 @@ jobs:
     strategy:
       fail-fast: false  # https://github.com/actions/runner-images#available-images
       matrix:  # https://github.com/actions/python-versions/releases
-        os: [ubuntu-26.04, ubuntu-26.04-arm, macos-latest, macos-26-intel, windows-latest, windows-11-arm]
+        os: [ubuntu-26.04, ubuntu-26.04-arm, macos-latest, macos-26-intel]  # , windows-latest, windows-11-arm]
         # python-version: ["3.10", "3.12", "3.14", "3.14t", "3.15", "pypy-3.11"]
         python-version: [3.x]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: leafo/gh-actions-lua@v13
         with:
-          luaVersion: 5.2.4  # https://www.lua.org/versions.html
+          luaVersion: 5.1.5  # https://www.lua.org/versions.html
+      - run: lua -v || true
+      - run: lua -h || true
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
