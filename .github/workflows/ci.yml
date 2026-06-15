@@ -19,9 +19,9 @@ jobs:
       #- uses: leafo/gh-actions-luarocks@v6
       - if: runner.os == 'macOS'
         run: |
-          brew install pkg-config lua@5.1 luarocks
-          echo "PKG_CONFIG_PATH=$(brew --prefix lua@5.1)/lib/pkgconfig" >> "$GITHUB_ENV"
-          echo "LUA_DIR=$(brew --prefix lua@5.1)" >> "$GITHUB_ENV"
+          brew install pkg-config luarocks
+          echo "PKG_CONFIG_PATH=$(brew --prefix lua)/lib/pkgconfig" >> "$GITHUB_ENV"
+          echo "LUA_DIR=$(brew --prefix lua)" >> "$GITHUB_ENV"
       - if: runner.os == 'Linux'
         run: |
           sudo apt-get update
@@ -44,6 +44,6 @@ jobs:
           print(f"{type(lg) = }")
           print(f"{type(lg.string) = }")
           print(f"{type(lg.string.lower) = }")
-          print(f"{lg.string.lower('Hello world!'') = }")          
+          print(f"{lg.string.lower('Hello world!') = }")          
       - run: pip install pytest
       - run: pytest
