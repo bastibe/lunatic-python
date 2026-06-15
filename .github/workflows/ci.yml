@@ -25,7 +25,7 @@ jobs:
       - if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y pkg-config lua5.1 liblua5.1-0-dev luarocks
+          sudo apt-get install -y liblua5.1-0-dev  # pkg-config lua5.1 luarocks
       - run: lua -h || lua -v
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -34,7 +34,7 @@ jobs:
           allow-prereleases: true
       - run: pip install --upgrade pip
       - env:
-          PYTHON_LIBRT: "x64"
+          PYTHON_LIBRT: "amd64"  # "x64"
         run: pip install --editable . || true  #  TODO: Always fails even if $PYTHON_LIBRT is defined
       - run: luarocks install lunatic-python || true  # TODO: Always fails! luarocks: command not found
       # - run: pip install lunatic-python || true  # Install from PyPI -- Always fails!
