@@ -21,7 +21,8 @@ jobs:
           allow-prereleases: true
       - run: pip install --upgrade pip
       - run: pip install pytest
-      - run: pip install --editable .
+      # - run: pip install --editable .
+      - run: luarocks install lunatic-python
       - shell: python  # Sanity check
         run: |
           import lua
