@@ -1,0 +1,32 @@
+name: ci
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  ci:
+    strategy:
+      fail-fast: false  # https://github.com/actions/runner-images#available-images
+      matrix:  # https://www.lua.org/versions.html
+        os: [ubuntu-26.04, ubuntu-26.04-arm]
+        lua-version: [5.1, 5.2, 5.3, 5.4, 5.5]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y lua${{ matrix.lua-version }} liblua${{ matrix.lua-version }}-dev luarocks
+      - run: lua -v && luarocks --version  # Lua 5.x.x Luarocks 3.13.0
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: 3.x
+          pip-install: --editable .
+      - run: luarocks lint lunatic-python-scm-0.rockspec
+      - run: luarocks lint rockspecs/lunatic-python-1.0-1.rockspec
+      - run: luarocks --local make
+      - run: luarocks show lunatic-python
+      # TODO: Linux Lua5.2 only: lua5.2: python.so: undefined symbol: luaL_loadbuffer
+      # TODO: Linux Lua5.4 only: lua5.4: python.so: undefined symbol: lua_insert
+      # TODO: Linux Lua5.5 only: lua5.5: python.so: undefined symbol: luaL_openlibs
+      - if: matrix.lua-version == '5.1' || matrix.lua-version == '5.3'
+        run: lua${{ matrix.lua-version }} tests/test_py.lua
