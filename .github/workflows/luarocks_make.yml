@@ -1,0 +1,59 @@
+name: ci
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  ci:
+    strategy:
+      fail-fast: false  # https://github.com/actions/runner-images#available-images
+      matrix:  # https://www.lua.org/versions.html
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - run: echo "${{ runner.os }} on ${{ runner.arch }}"
+      - if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y luarocks
+      - if: runner.os == 'macOS'
+        run: brew install luarocks
+      - if: runner.os == 'Windows'
+        run: |
+          choco install luarocks
+          lua5.1 -h || lua5.1 -v
+      # - if: runner.os == 'Windows'
+      #  uses: TheMrMilchmann/setup-msvc-dev@v4  # luarocks NEEDS this on Windows
+      #  with:
+      #    arch: x64
+      - uses: step-security/msvc-dev-cmd@v1  # https://github.com/marketplace/actions/install-lua-luajit#usage
+      - if: runner.os != 'Windows'
+        run: lua -h || lua -v
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: 3.x
+      - run: luarocks --version
+      # TODO: macOS: ld: unknown options: -shared ; make: *** [python.dylib] Error 1
+      # TODO: Windows: Makefile.luarocks(2) : fatal error U1034: syntax error : separator missing
+      - run: luarocks --local make
+
+  leafo:
+    strategy:
+      fail-fast: false  # https://github.com/actions/runner-images#available-images
+      matrix:  # https://www.lua.org/versions.html
+        os: [ubuntu-latest, macos-latest]  # Windows is not yet supported by leafo/gh-actions-luarocks
+    runs-on: ${{ matrix.os }}
+    steps:
+      - run: echo "${{ runner.os }} on ${{ runner.arch }}"
+      - uses: actions/checkout@v7
+      - uses: leafo/gh-actions-lua@v13
+        with:
+          luaVersion: "5.5.0"
+      - uses: leafo/gh-actions-luarocks@v6
+        with:
+          luarocksVersion: "3.13.0"
+      - run: lua -h || lua -v && luarocks --version
+      # TODO: macOS: ld: unknown options: -shared ; make: *** [python.dylib] Error 1
+      # TODO: Windows: Makefile.luarocks(2) : fatal error U1034: syntax error : separator missing
+      - run: luarocks --local make
