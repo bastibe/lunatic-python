@@ -13,7 +13,7 @@ if PY3:
 else:
     import commands
 from distutils.core import setup, Extension
-from distutils.sysconfig import get_python_lib, get_python_version
+from distutils.sysconfig import get_config_var, get_python_lib, get_python_version
 
 if os.path.isfile("MANIFEST"):
     os.unlink("MANIFEST")
@@ -32,6 +32,7 @@ PYLIBS = ["python" + get_python_version(), "pthread", "util"]
 PYLIBDIR = [get_python_lib(standard_lib=True) + "/config"]
 LUALIBS = ["lua" + LUAVERSION]
 LUALIBDIR = []
+PYTHON_LIBRT = os.path.join(get_config_var('LIBDIR'), get_config_var('LDLIBRARY'))
 
 def pkgconfig(*packages):
     # map pkg-config output to kwargs for distutils.core.Extension
@@ -65,7 +66,7 @@ def pkgconfig(*packages):
     return kwargs
 
 lua_pkgconfig = pkgconfig('lua' + LUAVERSION, 'python-' + PYTHONVERSION)
-lua_pkgconfig['extra_compile_args'] = ['-I/usr/include/lua'+LUAVERSION]
+lua_pkgconfig['extra_compile_args'] = ['-I/usr/include/lua'+LUAVERSION, '-DPYTHON_LIBRT="' + str(PYTHON_LIBRT) + '"']
 
 setup(name="lunatic-python",
       version="1.0",
