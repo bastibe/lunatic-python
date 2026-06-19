@@ -18,14 +18,17 @@ from distutils.sysconfig import get_config_var, get_python_lib, get_python_versi
 if os.path.isfile("MANIFEST"):
     os.unlink("MANIFEST")
 
-presult, poutput = commands.getstatusoutput("pkg-config --exists lua5.2")
-HAS_LUA5_2 = (presult == 0)
+lua_versions = ["5.5", "5.4", "5.3", "5.2", "5.1"]
 
-# You may have to change these
-if HAS_LUA5_2:
-    LUAVERSION = "5.2"
-else:
-    LUAVERSION = "5.1"
+LUAVERSION = None
+for version in lua_versions:
+	presult, poutput = commands.getstatusoutput("pkg-config --exists lua" + str(version))
+	if presult == 0:
+		LUAVERSION = version
+		break
+
+if LUAVERSION is None:
+	raise Exception('No compatible version of Lua found. Tried ' + str(lua_versions))
 
 PYTHONVERSION = get_python_version()
 PYLIBS = ["python" + get_python_version(), "pthread", "util"]
