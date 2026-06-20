@@ -1,19 +1,19 @@
 #!/usr/bin/python
 
-import sys
 import os
+import sys
+from distutils.sysconfig import get_python_lib
 
-if sys.version > '3':
-    PY3 = True
-else:
-    PY3 = False
+PY3 = sys.version_info >= (3, 0)
 
 if PY3:
-    import subprocess as commands
+    from setuptools import Extension, setup
+    from subprocess import getstatusoutput
+    from sysconfig import get_config_var, get_python_version
 else:
-    import commands
-from distutils.core import setup, Extension
-from distutils.sysconfig import get_config_var, get_python_lib, get_python_version
+    from commands import getstatusoutput
+    from distutils.core import setup, Extension
+    from distutils.sysconfig import get_config_var, get_python_version
 
 if os.path.isfile("MANIFEST"):
     os.unlink("MANIFEST")
@@ -22,7 +22,7 @@ lua_versions = ["5.5", "5.4", "5.3", "5.2", "5.1"]
 
 LUAVERSION = None
 for version in lua_versions:
-	presult, poutput = commands.getstatusoutput("pkg-config --exists lua" + str(version))
+	presult, poutput = getstatusoutput("pkg-config --exists lua" + str(version))
 	if presult == 0:
 		LUAVERSION = version
 		break
@@ -43,7 +43,7 @@ def pkgconfig(*packages):
 
     combined_pcoutput = ''
     for package in packages:
-        (pcstatus, pcoutput) = commands.getstatusoutput(
+        (pcstatus, pcoutput) = getstatusoutput(
             "pkg-config --libs --cflags %s" % package)
         if pcstatus == 0:
             combined_pcoutput += ' ' + pcoutput
