@@ -15,6 +15,9 @@ else:
 from distutils.core import setup, Extension
 from distutils.sysconfig import get_config_var, get_python_lib, get_python_version
 
+if not os.environ.get("PKG_CONFIG_PATH"):  # set this on macOS and Windows
+    os.environ["PKG_CONFIG_PATH"] = os.path.join(get_config_var("LIBDIR"), "pkgconfig")
+
 if os.path.isfile("MANIFEST"):
     os.unlink("MANIFEST")
 
