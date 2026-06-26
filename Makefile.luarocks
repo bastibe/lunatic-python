@@ -8,6 +8,7 @@ LIBEXT_S = .dll.a
 COPY = copy
 RM = del
 else ifeq ($(shell uname -s),Darwin)
+LD = clang
 LIBEXT = .dylib
 LIBEXT_S = .a
 COPY = cp -v
@@ -28,7 +29,12 @@ all: $(TARGET) $(TARGET_S)
 
 CFLAGS := -Isrc -fPIC $(shell python3-config --embed --cflags) -DPYTHON_LIBRT=$(shell pkg-config python3-embed --keep-system-libs --libs | sed -e 's/-L//g' -e 's/ -l/\/lib/g' | xargs echo -n)$(LIBEXT) -I$(LUA_INCDIR)
 
+ifeq ($(shell uname -s),Darwin)
+LDFLAGS := $(shell python3-config --embed --ldflags) $(if $(and $(LUA_LIBDIR_FILE),$(or $(LUA_LIBDIR),$(LUA_INCDIR))),$(or $(LUA_LIBDIR),$(patsubst %/include,%/lib,$(LUA_INCDIR)))/$(LUA_LIBDIR_FILE),$(if $(or $(LUA_LIBDIR),$(LUA_INCDIR)),-L$(or $(LUA_LIBDIR),$(patsubst %/include,%/lib,$(LUA_INCDIR))) -llua,))
+else
 LDFLAGS := $(shell python3-config --embed --ldflags)
+endif
+
 ARFLAGS = $(shell python3-config --configdir)/libpython*$(LIBEXT_S)
 
 OBJS := \
